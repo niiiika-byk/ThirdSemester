@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой сайт{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-size: cover; /* Заполнение всего фона */
+            background-position: center; /* Центрирование изображения */
+            color: black; /* Цвет текста по умолчанию */
+        }
+        .hero {
+            background-color: rgba(0, 123, 255, 0.7); /* Полупрозрачный фон для заголовка */
+            padding: 50px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'home' %}">Главная</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'registration' %}">Регистрация</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="javascript:history.back()">Назад</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero" id="hero-section">
+        <h1 id="hero-header">{% block header %}Добро пожаловать!{% endblock %}</h1>
+        <p class="lead" id="hero-lead">{% block lead %}Здесь вы можете зарегистрироваться на рейс или от лица сотрудника аэропорта.{% endblock %}</p>
+    </div>
+
+    <div class="container mt-5">
+        {% block content %}
+        <!-- Здесь будет контент страниц -->
+        {% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Функция для изменения цвета текста в зависимости от фона
+        function updateTextColor() {
+            const heroSection = document.getElementById('hero-section');
+            const heroHeader = document.getElementById('hero-header');
+            const heroLead = document.getElementById('hero-lead');
+
+            // Получаем цвет фона
+            const bgColor = window.getComputedStyle(heroSection).backgroundColor;
+
+            // Преобразуем цвет фона в RGB
+            const rgb = bgColor.match(/\d+/g);
+            const r = parseInt(rgb[0]);
+            const g = parseInt(rgb[1]);
+            const b = parseInt(rgb[2]);
+
+            // Вычисляем яркость
+            const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+
+            // Устанавливаем цвет текста в зависимости от яркости
+            if (brightness < 128) {
+                heroHeader.style.color = 'white';
+                heroLead.style.color = 'white';
+            } else {
+                heroHeader.style.color = 'black';
+                heroLead.style.color = 'black';
+            }
+        }
+
+        // Вызываем функцию при загрузке страницы
+        document.addEventListener("DOMContentLoaded", updateTextColor);
+    </script>
+</body>
+</html>

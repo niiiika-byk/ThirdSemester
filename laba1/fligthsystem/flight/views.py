@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from .forms import RegistrationForm
 
+def home_view(request):
+    return render(request, 'home.html')
+
 def registration_view(request):
     success_message = None
     if request.method == 'POST':

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Домашняя страница{% endblock %}
+
+{% block header %}Добро пожаловать на домашнюю страницу!{% endblock %}
+
+{% block content %}
+    <h2>Регистрация</h2>
+    <a href="{% url 'registration' %}" class="btn btn-primary btn-lg">Перейти к регистрации</a>
+    <a href="{% url 'registration' %}" class="btn btn-custom btn-lg ml-3">Регистрация от лица сотрудника аэропорта</a>
+{% endblock %}

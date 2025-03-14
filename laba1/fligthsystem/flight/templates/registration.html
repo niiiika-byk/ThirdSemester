@@ -1,27 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация на рейс</title>
-    <style>
-        .alert {
-            display: none; /* Скрываем уведомление по умолчанию */
-            padding: 15px;
-            margin: 20px 0;
-            border: 1px solid transparent;
-            border-radius: 4px;
-        }
-        .alert-success {
-            color: #155724;
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-        }
-    </style>
-</head>
-<body>
-    <h1>Регистрация на рейс</h1>
-    
+{% extends 'base.html' %}
+
+{% block title %}Регистрация на рейс{% endblock %}
+
+{% block header %}Регистрация на рейс{% endblock %}
+
+{% block content %}
     {% if success_message %}
         <div class="alert alert-success" id="success-alert">
             {{ success_message }}
@@ -46,5 +29,4 @@
             }); 
         {% endif %}
     </script>
-</body>
-</html>
+{% endblock %}
