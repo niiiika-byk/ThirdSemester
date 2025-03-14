@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация на рейс</title>
+    <style>
+        .alert {
+            display: none; /* Скрываем уведомление по умолчанию */
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Регистрация на рейс</h1>
+    
+    {% if success_message %}
+        <div class="alert alert-success" id="success-alert">
+            {{ success_message }}
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+
+    <script>
+        // Показываем уведомление, если оно есть
+        {% if success_message %}
+            document.addEventListener("DOMContentLoaded", function() {
+                document.getElementById('success-alert').style.display = 'block';
+                // Скрываем уведомление через 3 секунды
+                setTimeout(function() {
+                    document.getElementById('success-alert').style.display = 'none';
+                }, 3000);
+            }); 
+        {% endif %}
+    </script>
+</body>
+</html>
