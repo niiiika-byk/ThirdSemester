@@ -1,5 +1,10 @@
 from django.db import models
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractUser 
+
+class CustomUser (AbstractUser ):
+    email = models.EmailField(unique=True)
+    pass
 
 class Registration(models.Model):
         # Валидатор для серии паспорта (например, 00 00)
