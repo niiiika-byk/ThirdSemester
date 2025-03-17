@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Подозрительные пассажиры{% endblock %}
+
+{% block header %}Подозрительные пассажиры{% endblock %}
+
+{% block lead %}Список подозрительных пассажиров по рейсам.{% endblock %}
+
+{% block content %}
+    <div class="mt-4">
+        {% if suspicious_passengers %}
+            {% for flight in suspicious_passengers.values_list('flight', flat=True).distinct %}
+                <h2>Рейс: {{ flight }}</h2>
+                <ul class="list-group">
+                    {% for passenger in suspicious_passengers %}
+                        {% if passenger.flight.id == flight %}
+                            <li class="list-group-item">{{ passenger.name }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% else %}
+            <p>Нет подозрительных пассажиров.</p>
+        {% endif %}
+    </div>
+{% endblock %}

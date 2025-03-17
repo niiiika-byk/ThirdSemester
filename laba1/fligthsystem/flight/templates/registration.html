@@ -124,10 +124,19 @@
         // Показываем уведомление, если оно есть
         {% if success_message %}
             document.addEventListener("DOMContentLoaded", function() {
-                document.getElementById('success-alert').style.display = 'block';
+                const successAlert = document.getElementById('success-alert');
+                successAlert.style.display = 'block';
                 // Скрываем уведомление через 3 секунды
                 setTimeout(function() {
-                    document.getElementById('success-alert').style.display = 'none';
+                    successAlert.style.display = 'none';
+                    
+                    // Очищаем форму
+                    const form = document.querySelector('form');
+                    form.last_name.value = '';
+                    form.first_name.value = '';
+                    form.passport_series.value = '';
+                    form.passport_number.value = '';
+                    form.flight.selectedIndex = 0; // Сбрасываем выбор рейса
                 }, 3000);
             }); 
         {% endif %}
