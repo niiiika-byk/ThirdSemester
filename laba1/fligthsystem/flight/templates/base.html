@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Мой сайт{% endblock %}</title>
+    <title>{% block title %}Сайт безопасности воздушного транспорта{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-size: cover; /* Заполнение всего фона */
-            background-position: center; /* Центрирование изображения */
-            color: black; /* Цвет текста по умолчанию */
+            background-size: cover;
+            background-position: center;
+            color: black;
         }
         .hero {
-            background-color: rgba(0, 123, 255, 0.7); /* Полупрозрачный фон для заголовка */
+            background-color: rgba(0, 123, 255, 0.7);
             padding: 50px 0;
             text-align: center;
         }
@@ -38,7 +38,7 @@
 
     <div class="hero" id="hero-section">
         <h1 id="hero-header">{% block header %}Добро пожаловать!{% endblock %}</h1>
-        <p class="lead" id="hero-lead">{% block lead %}Здесь вы можете зарегистрироваться на рейс или от лица сотрудника аэропорта.{% endblock %}</p>
+        <p class="lead" id="hero-lead">{% block lead %}Здесь будет пояснение{% endblock %}</p>
     </div>
 
     <div class="container mt-5">
