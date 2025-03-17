@@ -7,17 +7,118 @@
 {% block lead %}Введите всю информацию о пассажире, все поля обязательны.{% endblock %}
 
 {% block content %}
-    {% if success_message %}
-        <div class="alert alert-success" id="success-alert">
-            {{ success_message }}
-        </div>
-    {% endif %}
+    <style>
+        /* Стили для центрирования формы */
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(70vh - 100px); /* Высота на весь экран минус отступы */
+        }
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Зарегистрироваться</button>
-    </form>
+        form {
+            background-color: white; /* Белый фон для формы */
+            padding: 20px;
+            border-radius: 8px; /* Закругленные углы */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Тень для эффекта поднятия */
+            width: 400px; /* Ширина формы */
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Отступ между полями */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%; /* Поля на всю ширину */
+            padding: 10px; /* Отступы внутри полей */
+            border: 1px solid #ced4da; /* Граница */
+            border-radius: 4px; /* Закругленные углы */
+            font-size: 14px; /* Размер шрифта */
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #80bdff; /* Цвет границы при фокусе */
+            outline: none; /* Убираем стандартный контур */
+        }
+
+        .btn-primary {
+            width: 100%; /* Кнопка на всю ширину */
+            padding: 10px; /* Отступы внутри кнопки */
+            background-color: #007bff; /* Цвет кнопки */
+            border: none; /* Убираем границу */
+            color: white; /* Цвет текста */
+            font-size: 16px; /* Размер шрифта */
+            border-radius: 4px; /* Закругленные углы */
+            cursor: pointer; /* Курсор при наведении */
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3; /* Цвет кнопки при наведении */
+        }
+    </style>
+
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if success_message %}
+                <div class="alert alert-success" id="success-alert">
+                    {{ success_message }}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="last_name">Фамилия:</label>
+                {{ form.last_name }}
+                {% for error in form.last_name.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="first_name">Имя:</label>
+                {{ form.first_name }}
+                {% for error in form.first_name.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="passport_series">Серия паспорта:</label>
+                {{ form.passport_series }}
+                {% for error in form.passport_series.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="passport_number">Номер паспорта:</label>
+                {{ form.passport_number }}
+                {% for error in form.passport_number.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="flight-select">Рейс:</label>
+                <select id="flight-select" name="flight" required>
+                    <option value="" disabled selected>Выберите рейс</option>
+                    {% for flight in flights %}
+                        <option value="{{ flight.id }}">{{ flight.flight_number }} - {{ flight.destination }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.flight.errors %}
+                    <div class="alert alert-danger">{{ form.flight.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Зарегистрировать</button>
+        </form>
+    </div>
 
     <script>
         // Показываем уведомление, если оно есть

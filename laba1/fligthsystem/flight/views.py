@@ -1,15 +1,11 @@
 from django.shortcuts import render, redirect
-from .forms import RegistrationForm
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
+from .forms import RegistrationForm, CreationForm
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
-from .forms import CreationForm
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-from django.contrib.auth import logout
+from .models import Flight
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('register/login')
@@ -45,6 +41,8 @@ def home_view(request):
 @login_required
 def registration_view(request):
     success_message = None
+    flights = Flight.objects.all()  # Получаем все рейсы
+
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -52,7 +50,12 @@ def registration_view(request):
             success_message = "Регистрация прошла успешно!"
     else:
         form = RegistrationForm()
-    return render(request, 'registration.html', {'form': form, 'success_message': success_message})
+
+    return render(request, 'registration.html', {
+        'form': form,
+        'success_message': success_message,
+        'flights': flights
+    })
 
 def logout_view(request):
     logout(request)

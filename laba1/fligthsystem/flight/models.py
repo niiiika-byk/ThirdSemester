@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser 
+import random
 
 class CustomUser (AbstractUser ):
     email = models.EmailField(unique=True)
@@ -26,3 +27,32 @@ class Registration(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.flight}"
+    
+class Flight(models.Model):
+    flight_number = models.CharField(max_length=6, unique=True)  # Номер рейса (2 буквы + 4 цифры)
+    destination = models.CharField(max_length=100)  # Направление
+
+    def __str__(self):
+        return f"{self.flight_number} - {self.destination}"
+
+class Passenger(models.Model):
+    STATUS_CHOICES = [
+        (0, 'Не подозрительный'),
+        (1, 'Подозрительный'),
+    ]
+
+    suspicious_status = models.IntegerField(choices=STATUS_CHOICES, default=0)
+    status_incident = models.IntegerField(choices=STATUS_CHOICES, default=0)
+
+    def generate_random_status(self):
+        self.suspicious_status = random.choice([0, 1])  # 0 - Не подозрительный, 1 - Подозрительный
+        self.save()
+
+class Incident(models.Model):
+    passport_series = models.CharField(max_length=4)  # Серия паспорта
+    passport_number = models.CharField(max_length=6)  # Номер паспорта
+    incident_date = models.DateTimeField(auto_now_add=True)  # Дата инцидента
+    description = models.TextField()  # Описание инцидента
+
+    def __str__(self):
+        return f"Инцидент {self.passport_series} {self.passport_number} - {self.incident_date}"
