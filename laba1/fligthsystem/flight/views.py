@@ -82,11 +82,26 @@ def registration_view(request):
 
 @login_required
 def suspicious_passengers(request):
-    suspicious_passengers = Passenger.objects.filter(is_suspicious=True).select_related('flight')
-    context = {
-        'suspicious_passengers': suspicious_passengers
-    }
-    return render(request, 'suspicious_passengers.html', context)
+    flights = Flight.objects.all()  # Получаем все рейсы
+
+    if request.user.is_staff:
+        # Получаем ID рейса из GET-запроса, если он есть
+        flight_id = request.GET.get('flight_id')
+
+        if flight_id:
+            # Фильтруем пассажиров по выбранному рейсу
+            suspicious_passengers = Passenger.objects.filter(suspicious_status=1, registration__flight=flight_id).prefetch_related('registration_set')
+        else:
+            # Если рейс не выбран, получаем всех подозрительных пассажиров
+            suspicious_passengers = Passenger.objects.filter(suspicious_status=1).prefetch_related('registration_set')
+
+        return render(request, 'suspicious_passengers.html', context={
+            'suspicious_passengers': suspicious_passengers,
+            'flights': flights  # Передаем рейсы в контекст
+        })
+
+    # Если не администратор, можно вернуть пустой список или сообщение
+    return render(request, 'suspicious_passengers.html', context={'suspicious_passengers': [], 'flights': flights})
 
 def logout_view(request):
     logout(request)
