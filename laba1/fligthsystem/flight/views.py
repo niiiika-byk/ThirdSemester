@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.decorators import login_required
-from .models import Flight, Passenger
+from .models import Flight, Passenger, Registration
 import random
 
 class CustomLogoutView(LogoutView):
@@ -82,26 +82,36 @@ def registration_view(request):
 
 @login_required
 def suspicious_passengers(request):
-    flights = Flight.objects.all()  # Получаем все рейсы
+    flights = Flight.objects.all()
 
-    if request.user.is_staff:
-        # Получаем ID рейса из GET-запроса, если он есть
-        flight_id = request.GET.get('flight_id')
+    flight_id = request.GET.get('flight_id')
 
-        if flight_id:
-            # Фильтруем пассажиров по выбранному рейсу
-            suspicious_passengers = Passenger.objects.filter(suspicious_status=1, registration__flight=flight_id).prefetch_related('registration_set')
-        else:
-            # Если рейс не выбран, получаем всех подозрительных пассажиров
-            suspicious_passengers = Passenger.objects.filter(suspicious_status=1).prefetch_related('registration_set')
+    registrations = Registration.objects.all()
 
-        return render(request, 'suspicious_passengers.html', context={
-            'suspicious_passengers': suspicious_passengers,
-            'flights': flights  # Передаем рейсы в контекст
-        })
+    passengers_by_flight = {}
 
-    # Если не администратор, можно вернуть пустой список или сообщение
-    return render(request, 'suspicious_passengers.html', context={'suspicious_passengers': [], 'flights': flights})
+    for registration in registrations:
+        flight_number = registration.flight.flight_number
+        suspicious_status = registration.passenger.suspicious_status if registration.passenger else 0
+
+        passenger_data = {
+            'first_name': registration.first_name,
+            'last_name': registration.last_name,
+            'suspicious_status': suspicious_status,
+        }
+
+        if flight_id is None or registration.flight.id == int(flight_id):
+            if flight_number not in passengers_by_flight:
+                passengers_by_flight[flight_number] = []
+            passengers_by_flight[flight_number].append(passenger_data)
+
+    context = {
+        'passengers_by_flight': passengers_by_flight,
+        'flights': flights,
+        'selected_flight_id': flight_id,
+    }
+
+    return render(request, 'suspicious_passengers.html', context)
 
 def logout_view(request):
     logout(request)

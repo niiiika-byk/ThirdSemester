@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Пассажиры по рейсам{% endblock %}
+
+{% block header %}Пассажиры по рейсам{% endblock %}
+
+{% block lead %}Информация о пассажирах, сгруппированная по рейсам и статусу подозрительности.{% endblock %}
+
+{% block content %}
+    <div class="form-group">
+        <label for="flight-select">Выберите рейс:</label>
+        <form method="get" action="">
+            <select id="flight-select" name="flight_id" class="form-control" onchange="this.form.submit()">
+                <option value="" disabled {% if not selected_flight_id %}selected{% endif %}>Выберите рейс</option>
+                {% for flight in flights %}
+                    <option value="{{ flight.id }}" {% if flight.id|stringformat:"s" == selected_flight_id %}selected{% endif %}>
+                        {{ flight.flight_number }} - {{ flight.destination }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    {% if passengers_by_flight|length == 0 %}
+        <div class="alert alert-warning">Регистрация еще не началась или нет зарегистрированных.</div>
+    {% else %}
+        {% for flight_number, passengers in passengers_by_flight.items %}
+            <h3>Рейс: {{ flight_number }}</h3>
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Имя</th>
+                        <th>Фамилия</th>
+                        <th>Статус подозрительности</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for passenger in passengers %}
+                        <tr>
+                            <td>{{ passenger.first_name }}</td>
+                            <td>{{ passenger.last_name }}</td>
+                            <td>
+                                {% if passenger.suspicious_status == 0 %}
+                                    <span class="text-success">Не подозрительный</span>
+                                {% else %}
+                                    <span class="text-danger">Подозрительный</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

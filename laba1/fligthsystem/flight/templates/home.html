@@ -8,7 +8,9 @@
 
 {% block content %}
     <h2>Регистрация</h2>
-    <a href="{% url 'registration' %}" class="btn btn-primary btn-lg">Регистрация пассажира на рейс</a>
-    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Регистрация нового сотрудника</a>
-    <a href="{% url 'suspicious_passengers' %}" class="btn btn-warning">Отслеживание подозрительных пассажиров</a>
+    <div class="btn-group-vertical" style="width: 100%;">
+        <a href="{% url 'registration' %}" class="btn btn-primary btn-lg mb-3">Регистрация пассажира на рейс</a>
+        <a href="{% url 'suspicious_passengers' %}" class="btn btn-warning btn-lg mb-3">Отслеживание подозрительных пассажиров</a> <!-- Изменен класс на btn-warning -->
+        <a href="{% url 'register' %}" class="btn btn-secondary btn-lg">Регистрация нового сотрудника</a>
+    </div>
 {% endblock %}
