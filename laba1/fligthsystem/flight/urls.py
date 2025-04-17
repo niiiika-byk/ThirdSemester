@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import registration_view, home_view, login_view, register, logout_view, suspicious_passengers
+from .views import update_passenger_status, delete_registration
 
 urlpatterns = [
     path('registration/', registration_view, name='registration'),
@@ -9,4 +10,6 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('logout/', logout_view, name='logout'),
     path('suspicious-passengers/', suspicious_passengers, name='suspicious_passengers'),
+    path('api/passengers/<int:passenger_id>/status/', update_passenger_status, name='update_passenger_status'),
+    path('api/registrations/<int:registration_id>/', delete_registration, name='delete_registration'),
 ]

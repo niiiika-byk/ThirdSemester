@@ -4,14 +4,12 @@
 
 {% block header %}Пассажиры по рейсам{% endblock %}
 
-{% block lead %}Информация о пассажирах, сгруппированная по рейсам и статусу подозрительности.{% endblock %}
-
 {% block content %}
     <div class="form-group">
         <label for="flight-select">Выберите рейс:</label>
         <form method="get" action="">
             <select id="flight-select" name="flight_id" class="form-control" onchange="this.form.submit()">
-                <option value="" disabled {% if not selected_flight_id %}selected{% endif %}>Выберите рейс</option>
+                <option value="" {% if not selected_flight_id %}selected{% endif %}>Все рейсы</option>
                 {% for flight in flights %}
                     <option value="{{ flight.id }}" {% if flight.id|stringformat:"s" == selected_flight_id %}selected{% endif %}>
                         {{ flight.flight_number }} - {{ flight.destination }}
@@ -21,35 +19,143 @@
         </form>
     </div>
 
-    {% if passengers_by_flight|length == 0 %}
-        <div class="alert alert-warning">Регистрация еще не началась или нет зарегистрированных.</div>
-    {% else %}
+    {% if passengers_by_flight %}
         {% for flight_number, passengers in passengers_by_flight.items %}
             <h3>Рейс: {{ flight_number }}</h3>
             <table class="table table-bordered">
-                <thead class="thead-light">
+                <thead>
                     <tr>
                         <th>Имя</th>
                         <th>Фамилия</th>
-                        <th>Статус подозрительности</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for passenger in passengers %}
-                        <tr>
-                            <td>{{ passenger.first_name }}</td>
-                            <td>{{ passenger.last_name }}</td>
-                            <td>
-                                {% if passenger.suspicious_status == 0 %}
-                                    <span class="text-success">Не подозрительный</span>
-                                {% else %}
-                                    <span class="text-danger">Подозрительный</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
+                    <tr id="passenger-row-{{ passenger.registration_id }}">
+                        <td>{{ passenger.first_name }}</td>
+                        <td>{{ passenger.last_name }}</td>
+                        <td class="status-cell">
+                            <span class="badge {% if passenger.suspicious_status == 1 %}bg-danger{% else %}bg-success{% endif %}">
+                                {% if passenger.suspicious_status == 1 %}Подозрительный{% else %}Не подозрительный{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm {% if passenger.suspicious_status == 1 %}btn-success{% else %}btn-warning{% endif %} toggle-status"
+                                    data-registration-id="{{ passenger.registration_id }}"
+                                    data-passenger-id="{{ passenger.passenger_id }}"
+                                    data-current-status="{{ passenger.suspicious_status }}">
+                                {% if passenger.suspicious_status == 1 %}Снять отметку{% else %}Пометить{% endif %}
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-passenger"
+                                    data-registration-id="{{ passenger.registration_id }}"
+                                    data-passenger-id="{{ passenger.passenger_id }}">
+                                Удалить
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         {% endfor %}
+    {% else %}
+        <div class="alert alert-warning">Нет данных для отображения.</div>
     {% endif %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.querySelectorAll('.toggle-status').forEach(button => {
+            button.addEventListener('click', function() {
+                const registrationId = this.dataset.registrationId;
+                const currentStatus = parseInt(this.dataset.currentStatus);
+                const newStatus = currentStatus === 1 ? 0 : 1;
+                
+                fetch(`/api/passengers/${registrationId}/status/`, {
+                    method: 'PUT',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        suspicious_status: newStatus
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        const row = document.querySelector(`#passenger-row-${registrationId}`);
+                        const badge = row.querySelector('.status-cell .badge');
+                        const button = row.querySelector('.toggle-status');
+                        
+                        if (newStatus === 1) {
+                            badge.className = 'badge bg-danger';
+                            badge.textContent = 'Подозрительный';
+                            button.className = 'btn btn-sm btn-success toggle-status';
+                            button.textContent = 'Снять отметку';
+                            button.dataset.currentStatus = '1';
+                        } else {
+                            badge.className = 'badge bg-success';
+                            badge.textContent = 'Не подозрительный';
+                            button.className = 'btn btn-sm btn-warning toggle-status';
+                            button.textContent = 'Пометить';
+                            button.dataset.currentStatus = '0';
+                        }
+                    } else {
+                        alert('Ошибка при обновлении статуса');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка');
+                });
+            });
+        });
+
+        document.querySelectorAll('.delete-passenger').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите удалить эту регистрацию?')) {
+                    const registrationId = this.dataset.registrationId;
+                    const passengerId = this.dataset.passengerId;
+                    
+                    fetch(`/api/registrations/${registrationId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            passenger_id: passengerId  // Передаем ID пассажира
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            document.getElementById(`passenger-row-${registrationId}`).remove();
+                        } else {
+                            alert('Ошибка при удалении');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка');
+                    });
+                }
+            });
+        });
+    });
+    </script>
 {% endblock %}

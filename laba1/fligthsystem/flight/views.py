@@ -6,7 +6,9 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.decorators import login_required
 from .models import Flight, Passenger, Registration
-import random
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import random, json
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('register/login')
@@ -49,23 +51,19 @@ def registration_view(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            # Сохраняем данные формы
-            registration = form.save(commit=False)  # Не сохраняем еще в БД
+            registration = form.save(commit=False)
 
-            # Создаем экземпляр Passenger с рандомным статусом
             passenger = Passenger()
 
-            # Генерируем статус с меньшей вероятностью для "Подозрительный"
-            if random.random() < 0.2:  # 20% вероятность быть подозрительным
+            if random.random() < 0.2:
                 passenger.suspicious_status = 1
             else:
                 passenger.suspicious_status = 0
 
-            passenger.save()  # Сохраняем пассажира в базе данных
+            passenger.save()
 
-            # Связываем регистрацию с пассажиром
             registration.passenger = passenger
-            registration.save()  # Сохраняем регистрацию в базе данных
+            registration.save()
 
             success_message = "Регистрация прошла успешно!"
             if passenger.suspicious_status == 1:
@@ -83,10 +81,9 @@ def registration_view(request):
 @login_required
 def suspicious_passengers(request):
     flights = Flight.objects.all()
-
     flight_id = request.GET.get('flight_id')
 
-    registrations = Registration.objects.all()
+    registrations = Registration.objects.select_related('flight', 'passenger').all()
 
     passengers_by_flight = {}
 
@@ -98,9 +95,11 @@ def suspicious_passengers(request):
             'first_name': registration.first_name,
             'last_name': registration.last_name,
             'suspicious_status': suspicious_status,
+            'registration_id': registration.passenger_id,
+            'passenger_id': registration.passenger.id if registration.passenger else None
         }
 
-        if flight_id is None or registration.flight.id == int(flight_id):
+        if flight_id is None or str(registration.flight.id) == flight_id:
             if flight_number not in passengers_by_flight:
                 passengers_by_flight[flight_number] = []
             passengers_by_flight[flight_number].append(passenger_data)
@@ -110,9 +109,37 @@ def suspicious_passengers(request):
         'flights': flights,
         'selected_flight_id': flight_id,
     }
-
     return render(request, 'suspicious_passengers.html', context)
 
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+@login_required
+@require_http_methods(["PUT"])
+def update_passenger_status(request, passenger_id):
+    try:
+        passenger = Passenger.objects.get(id=passenger_id)
+        data = json.loads(request.body)
+        passenger.suspicious_status = data.get('suspicious_status', 0)
+        passenger.save()
+        return JsonResponse({'status': 'success'})
+    except Passenger.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Passenger not found'}, status=404)
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_registration(request, registration_id):
+    try:
+        data = json.loads(request.body)
+        passenger_id = data.get('passenger_id')
+
+        if passenger_id:
+            Passenger.objects.filter(id=passenger_id).delete()
+
+        registration = Registration.objects.get(id=registration_id)
+        registration.delete()
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
