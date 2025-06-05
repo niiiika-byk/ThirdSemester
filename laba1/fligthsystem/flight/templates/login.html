@@ -8,7 +8,7 @@
 {% block lead %}Пожалуйста, войдите в систему от лица сотрудника аэропорта/авиакомпании.{% endblock %}
 
 {% block content %}
-    <form method="post" class="mt-4">
+    <form method="post" class="mt-4" id="loginForm">
         {% csrf_token %}
         <div class="form-group">
             {{ form.username.label_tag }}
@@ -19,5 +19,9 @@
             {{ form.password|add_class:"form-control" }}
         </div>
         <button type="submit" class="btn btn-primary">Войти</button>
+        
+        {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
     </form>
 {% endblock %}

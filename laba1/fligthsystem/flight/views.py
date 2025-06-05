@@ -8,7 +8,12 @@ from django.contrib.auth.decorators import login_required
 from .models import Flight, Passenger, Registration
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from rest_framework_simplejwt.tokens import RefreshToken
 import random, json
+from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('register/login')
@@ -24,24 +29,47 @@ def register(request):
     return render(request, 'register.html', {'form': form})
 
 def login_view(request):
+    form = AuthenticationForm()  # Инициализируем форму для метода GET
+    error = None  # Инициализируем переменную error
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
+            user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password']
+            )
+            if user:
                 login(request, user)
-                return redirect('home')  # Перенаправление на домашнюю страницу после входа
-    else:
-        form = AuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+                
+                # Генерация JWT
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
+                
+                # Логируем токены
+                logger.info(f"JWT generated for {user.username}:")
+                logger.info(f"Access: {access_token[:50]}...")
+                logger.info(f"Refresh: {str(refresh)[:50]}...")
+                
+                # Устанавливаем куки
+                response = redirect('home')
+                response.set_cookie(
+                    'jwt_access_token',
+                    access_token,
+                    httponly=True,
+                    secure=not settings.DEBUG,
+                    samesite='Lax'
+                )
+                return response
+            else:
+                error = "Неверное имя пользователя или пароль."
+        else:
+            error = "Форма заполнена неверно."
+    
+    return render(request, 'login.html', {'form': form, 'error': error})
 
 @login_required
 def home_view(request):
     return render(request, 'home.html')
-
-import random
 
 @login_required
 def registration_view(request):
@@ -112,8 +140,38 @@ def suspicious_passengers(request):
     return render(request, 'suspicious_passengers.html', context)
 
 def logout_view(request):
+    if hasattr(request, 'user') and request.user.is_authenticated:
+        username = request.user.username
+        logger.info(f"User {username} is logging out.")
+
+        # Блокируем refresh токен
+        try:
+            refresh_token = RefreshToken.for_user(request.user)
+            refresh_token.blacklist()
+            logger.info(f"Refresh token blacklisted for user {username}.")
+        except Exception as e:
+            logger.error(f"Error blacklisting refresh token for user {username}: {e}")
+
+    # Выход пользователя
     logout(request)
-    return redirect('login')
+
+    # Создаем response для redirect
+    response = redirect('login')
+    
+    # Очищаем JWT-токены из cookies
+    response.delete_cookie('jwt_access_token')
+    response.delete_cookie('jwt_refresh_token')
+    logger.info(f"JWT tokens cleared from cookies for user {username}.")
+
+    # Очищаем токены из сессии
+    if 'jwt_access_token' in request.session:
+        del request.session['jwt_access_token']
+        logger.info(f"Access token cleared from session for user {username}.")
+    if 'jwt_refresh_token' in request.session:
+        del request.session['jwt_refresh_token']
+        logger.info(f"Refresh token cleared from session for user {username}.")
+
+    return response
 
 @login_required
 @require_http_methods(["PUT"])
