@@ -22,11 +22,11 @@ class CustomLogoutView(LogoutView):
 
 @require_GET
 def handler403(request, exception=None):
-    return render(request, 'errors/403.html', status=403)
+    return render(request, '403.html', status=403)
 
 @require_GET
 def handler401(request, exception=None):
-    return render(request, 'errors/401.html', status=401)
+    return render(request, '401.html', status=401)
 
 @login_required
 def register(request):
