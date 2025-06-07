@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import RegistrationForm, CreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.decorators import login_required
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('register/login')
 
+@login_required
 def register(request):
     if request.method == 'POST':
         form = CreationForm(request.POST)
@@ -111,6 +113,7 @@ def suspicious_passengers(request):
     flights = Flight.objects.all()
     flight_id = request.GET.get('flight_id')
 
+    # Получаем все регистрации с выбором связанных объектов
     registrations = Registration.objects.select_related('flight', 'passenger').all()
 
     passengers_by_flight = {}
@@ -132,10 +135,18 @@ def suspicious_passengers(request):
                 passengers_by_flight[flight_number] = []
             passengers_by_flight[flight_number].append(passenger_data)
 
+    # Пагинация
+    passengers_list = list(passengers_by_flight.items())
+    paginator = Paginator(passengers_list, 2)  # Показываем по 20 рейсов на странице
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'passengers_by_flight': passengers_by_flight,
+        'passengers_by_flight': page_obj,
         'flights': flights,
         'selected_flight_id': flight_id,
+        'paginator': paginator,
+        'page_obj': page_obj,
     }
     return render(request, 'suspicious_passengers.html', context)
 
@@ -173,8 +184,8 @@ def logout_view(request):
 
     return response
 
-@login_required
 @require_http_methods(["PUT"])
+@login_required
 def update_passenger_status(request, passenger_id):
     try:
         passenger = Passenger.objects.get(id=passenger_id)
@@ -185,8 +196,8 @@ def update_passenger_status(request, passenger_id):
     except Passenger.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Passenger not found'}, status=404)
 
-@login_required
 @require_http_methods(["DELETE"])
+@login_required
 def delete_registration(request, registration_id):
     try:
         data = json.loads(request.body)
