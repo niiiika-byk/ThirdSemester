@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 from .forms import RegistrationForm, CreationForm
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy
@@ -33,8 +34,15 @@ def register(request):
     if request.method == 'POST':
         form = CreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')  # Перенаправление на страницу входа
+            # Сохраняем форму без коммита в БД
+            user = form.save(commit=False)
+            
+            # Явно хешируем пароль
+            user.password = make_password(form.cleaned_data['password'])
+            
+            user.save()
+            
+            return redirect('login')
     else:
         form = CreationForm()
     return render(request, 'register.html', {'form': form})
