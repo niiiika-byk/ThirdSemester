@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.views.decorators.http import require_GET
 from .forms import RegistrationForm, CreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -18,6 +19,14 @@ logger = logging.getLogger(__name__)
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('register/login')
+
+@require_GET
+def handler403(request, exception=None):
+    return render(request, 'errors/403.html', status=403)
+
+@require_GET
+def handler401(request, exception=None):
+    return render(request, 'errors/401.html', status=401)
 
 @login_required
 def register(request):
@@ -138,7 +147,7 @@ def suspicious_passengers(request):
     flights_list = list(flights_dict.items())
     
     # Пагинация по рейсам (не по пассажирам)
-    paginator = Paginator(flights_list, 2)  # 2 рейса на страницу
+    paginator = Paginator(flights_list, 2)
     page_obj = paginator.get_page(page_number)
 
     context = {

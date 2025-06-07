@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-warning">
+        <h4>Ошибка 403 - Доступ запрещен</h4>
+        <p>У вас недостаточно прав для просмотра этой страницы.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'home' %}" class="btn btn-primary">На главную</a>
+        {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Войти</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

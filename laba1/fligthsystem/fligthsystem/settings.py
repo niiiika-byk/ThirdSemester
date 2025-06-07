@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'flight.middleware.LogJWTMiddleware',
+    'flight.middleware.AuthErrorMiddleware',
+
 ]
 
 ROOT_URLCONF = 'fligthsystem.urls'

@@ -2,6 +2,9 @@ from django.urls import path
 from .views import registration_view, home_view, login_view, register, logout_view, suspicious_passengers
 from .views import update_passenger_status, delete_registration
 
+handler403 = 'flight.views.handler403'
+handler401 = 'flight.views.handler401'
+
 urlpatterns = [
     path('registration/', registration_view, name='registration'),
     path('', login_view, name='login_view'),

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger">
+        <h4>Ошибка 401 - Требуется авторизация</h4>
+        <p>Для доступа к этой странице необходимо войти в систему.</p>
+        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Войти</a>
+    </div>
+</div>
+{% endblock %}
