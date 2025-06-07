@@ -112,41 +112,39 @@ def registration_view(request):
 def suspicious_passengers(request):
     flights = Flight.objects.all()
     flight_id = request.GET.get('flight_id')
-
-    # Получаем все регистрации с выбором связанных объектов
-    registrations = Registration.objects.select_related('flight', 'passenger').all()
-
-    passengers_by_flight = {}
-
-    for registration in registrations:
-        flight_number = registration.flight.flight_number
-        suspicious_status = registration.passenger.suspicious_status if registration.passenger else 0
-
-        passenger_data = {
-            'first_name': registration.first_name,
-            'last_name': registration.last_name,
-            'suspicious_status': suspicious_status,
-            'registration_id': registration.passenger_id,
-            'passenger_id': registration.passenger.id if registration.passenger else None
-        }
-
-        if flight_id is None or str(registration.flight.id) == flight_id:
-            if flight_number not in passengers_by_flight:
-                passengers_by_flight[flight_number] = []
-            passengers_by_flight[flight_number].append(passenger_data)
-
-    # Пагинация
-    passengers_list = list(passengers_by_flight.items())
-    paginator = Paginator(passengers_list, 2)  # Показываем по 20 рейсов на странице
     page_number = request.GET.get('page')
+
+    # Получаем базовый QuerySet с группировкой по рейсам
+    registrations = Registration.objects.select_related('flight', 'passenger')
+    
+    if flight_id:
+        registrations = registrations.filter(flight_id=flight_id)
+    
+    # Создаем словарь {рейс: [пассажиры]}
+    flights_dict = {}
+    for reg in registrations:
+        flight = reg.flight
+        if flight not in flights_dict:
+            flights_dict[flight] = []
+        flights_dict[flight].append({
+            'first_name': reg.first_name,
+            'last_name': reg.last_name,
+            'suspicious_status': reg.passenger.suspicious_status if reg.passenger else 0,
+            'registration_id': reg.id,
+            'passenger_id': reg.passenger.id if reg.passenger else None
+        })
+
+    # Преобразуем в список для пагинации
+    flights_list = list(flights_dict.items())
+    
+    # Пагинация по рейсам (не по пассажирам)
+    paginator = Paginator(flights_list, 2)  # 2 рейса на страницу
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'passengers_by_flight': page_obj,
+        'page_obj': page_obj,  # Содержит (рейс, пассажиры) для текущей страницы
         'flights': flights,
         'selected_flight_id': flight_id,
-        'paginator': paginator,
-        'page_obj': page_obj,
     }
     return render(request, 'suspicious_passengers.html', context)
 

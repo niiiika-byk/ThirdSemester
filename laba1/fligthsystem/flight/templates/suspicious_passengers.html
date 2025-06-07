@@ -16,12 +16,13 @@
                     </option>
                 {% endfor %}
             </select>
+            <input type="hidden" name="page" value="1">
         </form>
     </div>
 
-    {% if passengers_by_flight %}
-        {% for flight_number, passengers in passengers_by_flight %}
-            <h3>Рейс: {{ flight_number }}</h3>
+    {% if page_obj %}
+        {% for flight, passengers in page_obj %}
+            <h3>Рейс: {{ flight.flight_number }} - {{ flight.destination }}</h3>
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -49,8 +50,7 @@
                                 {% if passenger.suspicious_status == 1 %}Снять отметку{% else %}Пометить{% endif %}
                             </button>
                             <button class="btn btn-sm btn-danger delete-passenger"
-                                    data-registration-id="{{ passenger.registration_id }}"
-                                    data-passenger-id="{{ passenger.passenger_id }}">
+                                    data-registration-id="{{ passenger.registration_id }}">
                                 Удалить
                             </button>
                         </td>
@@ -60,12 +60,12 @@
             </table>
         {% endfor %}
 
-        <!-- Навигация по страницам -->
+        <!-- Пагинация -->
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj.has_previous %}
-                    <a href="?page=1&flight_id={{ selected_flight_id }}">&laquo; Первая</a>
-                    <a href="?page={{ page_obj.previous_page_number }}&flight_id={{ selected_flight_id }}">Предыдущая</a>
+                    <a href="?page=1{% if selected_flight_id %}&flight_id={{ selected_flight_id }}{% endif %}">&laquo; 1</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if selected_flight_id %}&flight_id={{ selected_flight_id }}{% endif %}">Предыдущая</a>
                 {% endif %}
 
                 <span class="current">
@@ -73,8 +73,8 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}&flight_id={{ selected_flight_id }}">Следующая</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}&flight_id={{ selected_flight_id }}">Последняя &raquo;</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if selected_flight_id %}&flight_id={{ selected_flight_id }}{% endif %}">Следующая</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_flight_id %}&flight_id={{ selected_flight_id }}{% endif %}">Последняя &raquo;</a>
                 {% endif %}
             </span>
         </div>
