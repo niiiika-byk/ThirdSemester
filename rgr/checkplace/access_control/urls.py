@@ -8,4 +8,8 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('api/refresh-token/', views.refresh_token, name='refresh_token'),
+    path('manage-passes/', views.manage_passes, name='manage_passes'),
+    path('reports/', views.reports, name='reports'),
+    path('verify-pass/', views.verify_pass, name='verify_pass'),
+    path('request-pass/', views.request_pass, name='request_pass'),
 ]

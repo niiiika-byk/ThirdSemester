@@ -5,12 +5,71 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
+from .models import AirportPass, PassRequest
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 auth_logger = logging.getLogger('auth')
 
+@login_required
 def home(request):
-    return render(request, 'home.html')
+    context = {}
+    
+    if request.user.role == 'ADMIN':
+        context['active_passes_count'] = AirportPass.objects.filter(is_active=True).count()
+        
+    elif request.user.role == 'SECURITY':
+        context['active_passes'] = AirportPass.objects.filter(is_active=True).select_related('owner')[:20]
+        
+    elif request.user.role == 'STAFF':
+        # Активный пропуск (последний одобренный)
+        context['active_pass'] = AirportPass.objects.filter(
+            owner=request.user,
+            is_active=True
+        ).order_by('-expiry_date').first()
+        
+        # Все запросы пропусков пользователя
+        context['pass_requests'] = PassRequest.objects.filter(
+            user=request.user
+        ).order_by('-created_at')
+    
+    return render(request, 'home.html', context)
+
+@login_required
+def request_pass(request):
+    if not request.user.is_authenticated or request.user.role != 'STAFF':
+        return redirect('home')
+    
+    if request.method == 'POST':
+        access_zone = request.POST.get('access_zone')
+        purpose = request.POST.get('purpose')
+        
+        if access_zone and purpose:
+            PassRequest.objects.create(
+                user=request.user,
+                access_zone=access_zone,
+                purpose=purpose
+            )
+            messages.success(request, 'Ваш запрос отправлен на рассмотрение')
+        else:
+            messages.error(request, 'Заполните все поля')
+    
+    return redirect('home')
+
+@login_required
+def manage_passes(request):
+    # Заглушка - для администратора
+    return render(request, 'manage_passes.html')
+
+@login_required
+def reports(request):
+    # Заглушка - для администратора
+    return render(request, 'reports.html')
+
+@login_required
+def verify_pass(request):
+    # Заглушка - для службы безопасности
+    return render(request, 'verify_pass.html')
 
 def register(request):
     if request.method == 'POST':

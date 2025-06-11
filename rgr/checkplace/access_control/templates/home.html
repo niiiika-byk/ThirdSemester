@@ -5,9 +5,187 @@
 {% block content %}
     <h1>Добро пожаловать в CheckPlace!</h1>
     <p>Система контроля доступа в зоны аэропорта.</p>
+    
     {% if user.is_authenticated %}
-        <div class="alert alert-info">
+        <div class="alert alert-info mb-4">
             Ваша роль: <strong>{{ user.get_role_display }}</strong>
+        </div>
+        
+        {% if user.role == 'ADMIN' %}
+            <!-- Контент для администратора -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Управление пропусками (Администратор)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Все активные пропуски: <span class="badge bg-success">{{ active_passes_count }}</span></p>
+                    <a href="{% url 'manage_passes' %}" class="btn btn-primary">Управление пропусками</a>
+                    <a href="{% url 'reports' %}" class="btn btn-secondary">Отчеты</a>
+                </div>
+            </div>
+            
+        {% elif user.role == 'SECURITY' %}
+            <!-- Контент для службы безопасности -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5>Контроль доступа (Служба безопасности)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Номер пропуска</th>
+                                    <th>Владелец</th>
+                                    <th>Зона доступа</th>
+                                    <th>Срок действия</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pass in active_passes %}
+                                <tr>
+                                    <td>{{ pass.id }}</td>
+                                    <td>{{ pass.owner.get_full_name }}</td>
+                                    <td>{{ pass.access_zone }}</td>
+                                    <td>{{ pass.expiry_date|date:"d.m.Y" }}</td>
+                                    <td><span class="badge bg-success">Активен</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Нет активных пропусков</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'verify_pass' %}" class="btn btn-warning">Проверить пропуск</a>
+                </div>
+            </div>
+            
+        {% elif user.role == 'STAFF' %}
+            <!-- Улучшенный блок для персонала -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5>Мои пропуски</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Кнопка запроса нового пропуска -->
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#requestPassModal">
+                        Запросить новый пропуск
+                    </button>
+                    
+                    <!-- Активный пропуск (если есть) -->
+                    {% if active_pass %}
+                        <div class="alert alert-success mb-4">
+                            <h6>Активный пропуск</h6>
+                            <p>
+                                <strong>Зона доступа:</strong> {{ active_pass.get_access_zone_display }}<br>
+                                <strong>Действителен до:</strong> {{ active_pass.expiry_date|date:"d.m.Y" }}<br>
+                                <strong>Дата выдачи:</strong> {{ active_pass.issue_date|date:"d.m.Y" }}
+                            </p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Все запросы пропусков -->
+                    <h5 class="mb-3">История моих запросов</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>№</th>
+                                    <th>Дата запроса</th>
+                                    <th>Зона доступа</th>
+                                    <th>Срок действия</th>
+                                    <th>Статус</th>
+                                    <th>Причина</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pass in pass_requests %}
+                                <tr>
+                                    <td>{{ pass.id }}</td>
+                                    <td>{{ pass.created_at|date:"d.m.Y H:i" }}</td>
+                                    <td>{{ pass.get_access_zone_display }}</td>
+                                    <td>
+                                        {{ pass.start_date|date:"d.m.Y" }} - 
+                                        {{ pass.end_date|date:"d.m.Y" }}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if pass.status == 'APPROVED' %}bg-success
+                                            {% elif pass.status == 'REJECTED' %}bg-danger
+                                            {% else %}bg-warning text-dark{% endif %}">
+                                            {{ pass.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if pass.rejection_reason %}
+                                            <small class="text-muted">{{ pass.rejection_reason }}</small>
+                                        {% else %}
+                                            {{ pass.purpose|truncatechars:30 }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">У вас пока нет запросов пропусков</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Модальное окно запроса пропуска (оставляем как было) -->
+        <div class="modal fade" id="requestPassModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Запрос пропуска</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'request_pass' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Зона доступа</label>
+                                <select name="access_zone" class="form-select" required>
+                                    <option value="">Выберите зону...</option>
+                                    <option value="TERMINAL">Терминал</option>
+                                    <option value="AIRFIELD">Лётное поле</option>
+                                    <option value="SECURE">Зона повышенной безопасности</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Причина запроса</label>
+                                <textarea name="purpose" class="form-control" rows="3" required 
+                                          placeholder="Опишите, для чего вам нужен пропуск"></textarea>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Дата начала</label>
+                                    <input type="date" name="start_date" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Дата окончания</label>
+                                    <input type="date" name="end_date" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Отправить запрос</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            Пожалуйста, <a href="{% url 'login' %}" class="alert-link">войдите в систему</a>.
         </div>
     {% endif %}
 {% endblock %}

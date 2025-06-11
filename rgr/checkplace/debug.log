@@ -1,16 +1,91 @@
-INFO 2025-06-11 08:26:17,379 autoreload 48539 129546975809536 /home/businka/ThirdSemester/rgr/checkplace/checkplace/settings.py changed, reloading.
-INFO 2025-06-11 08:26:17,713 autoreload 48890 138372145598464 Watching for file changes with StatReloader
-INFO 2025-06-11 08:26:18,969 basehttp 48890 138372064470592 "GET / HTTP/1.1" 200 2221
-INFO 2025-06-11 08:26:20,314 basehttp 48890 138372064470592 "POST / HTTP/1.1" 302 0
-INFO 2025-06-11 08:26:20,330 basehttp 48890 138372064470592 "GET /home/ HTTP/1.1" 200 1380
-INFO 2025-06-11 08:26:21,562 basehttp 48890 138372064470592 "GET /logout/ HTTP/1.1" 302 0
-INFO 2025-06-11 08:26:21,569 basehttp 48890 138372064470592 "GET /login/ HTTP/1.1" 200 2221
-INFO 2025-06-11 08:28:51,639 autoreload 48890 138372145598464 /home/businka/ThirdSemester/rgr/checkplace/checkplace/settings.py changed, reloading.
-INFO 2025-06-11 08:28:52,042 autoreload 51027 138496295632896 Watching for file changes with StatReloader
-INFO 2025-06-11 08:28:53,695 basehttp 51027 138496213771840 "GET / HTTP/1.1" 200 2221
-INFO 2025-06-11 08:28:55,448 views 51027 138496213771840 User login successful: username=rose_12, user_id=1, token_issued=True
-INFO 2025-06-11 08:28:55,464 basehttp 51027 138496213771840 "POST / HTTP/1.1" 302 0
-INFO 2025-06-11 08:28:55,482 basehttp 51027 138496213771840 "GET /home/ HTTP/1.1" 200 1380
-INFO 2025-06-11 08:28:56,616 views 51027 138496213771840 User logout: user=rose_12, refresh_token=present
-INFO 2025-06-11 08:28:56,623 basehttp 51027 138496213771840 "GET /logout/ HTTP/1.1" 302 0
-INFO 2025-06-11 08:28:56,630 basehttp 51027 138496213771840 "GET /login/ HTTP/1.1" 200 2221
+INFO 2025-06-11 08:55:35,545 autoreload 72535 137559823339520 Watching for file changes with StatReloader
+INFO 2025-06-11 08:55:36,986 basehttp 72535 137559743129152 "GET / HTTP/1.1" 200 2210
+INFO 2025-06-11 08:55:39,195 views 72535 137559743129152 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 08:55:39,213 basehttp 72535 137559743129152 "POST / HTTP/1.1" 302 0
+INFO 2025-06-11 08:55:39,263 basehttp 72535 137559743129152 "GET /home/ HTTP/1.1" 200 2000
+INFO 2025-06-11 08:55:51,401 views 72535 137559743129152 User logout: user=rose_12, refresh_token=present
+INFO 2025-06-11 08:55:51,407 basehttp 72535 137559743129152 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:55:51,412 basehttp 72535 137559743129152 "GET /login/ HTTP/1.1" 200 2221
+INFO 2025-06-11 08:55:52,492 basehttp 72535 137559743129152 "GET /register/ HTTP/1.1" 200 3780
+INFO 2025-06-11 08:56:19,723 basehttp 72535 137559743129152 "POST /register/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:56:19,828 basehttp 72535 137559743129152 "GET /login/ HTTP/1.1" 200 2207
+INFO 2025-06-11 08:56:23,160 views 72535 137559743129152 User login successful: username=user, user_id=2, token_issued=True
+INFO 2025-06-11 08:56:23,172 basehttp 72535 137559743129152 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:56:23,216 basehttp 72535 137559743129152 "GET /home/ HTTP/1.1" 200 2935
+INFO 2025-06-11 08:56:49,352 views 72535 137559743129152 User logout: user=user, refresh_token=present
+INFO 2025-06-11 08:56:49,356 basehttp 72535 137559743129152 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:56:49,370 basehttp 72535 137559743129152 "GET /login/ HTTP/1.1" 200 2221
+INFO 2025-06-11 08:56:52,444 views 72535 137559743129152 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 08:56:52,462 basehttp 72535 137559743129152 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:56:52,491 basehttp 72535 137559743129152 "GET /home/ HTTP/1.1" 200 2000
+INFO 2025-06-11 08:57:01,543 views 72535 137559743129152 User logout: user=rose_12, refresh_token=present
+INFO 2025-06-11 08:57:01,552 basehttp 72535 137559743129152 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:57:01,559 basehttp 72535 137559743129152 "GET /login/ HTTP/1.1" 200 2221
+INFO 2025-06-11 08:57:04,519 basehttp 72535 137559743129152 "GET /register/ HTTP/1.1" 200 3780
+INFO 2025-06-11 08:57:36,295 basehttp 72535 137559743129152 "POST /register/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:57:36,331 basehttp 72535 137559743129152 "GET /login/ HTTP/1.1" 200 2211
+INFO 2025-06-11 08:57:39,266 views 72535 137559743129152 User login successful: username=veronika, user_id=3, token_issued=True
+INFO 2025-06-11 08:57:39,277 basehttp 72535 137559743129152 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-06-11 08:57:39,301 basehttp 72535 137559743129152 "GET /home/ HTTP/1.1" 200 2135
+INFO 2025-06-11 09:00:27,732 views 72535 137559743129152 User logout: user=veronika, refresh_token=present
+INFO 2025-06-11 09:00:27,739 basehttp 72535 137559743129152 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-06-11 09:00:27,744 basehttp 72535 137559743129152 "GET /login/ HTTP/1.1" 200 2221
+INFO 2025-06-11 09:00:31,999 views 72535 137559743129152 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 09:00:32,019 basehttp 72535 137559743129152 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-06-11 09:00:32,059 basehttp 72535 137559743129152 "GET /home/ HTTP/1.1" 200 2000
+INFO 2025-06-11 09:42:07,229 autoreload 101179 134486677573632 Watching for file changes with StatReloader
+INFO 2025-06-11 09:42:09,408 basehttp 101179 134486596511296 "GET / HTTP/1.1" 200 2210
+INFO 2025-06-11 09:42:11,422 views 101179 134486596511296 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 09:42:11,441 basehttp 101179 134486596511296 "POST / HTTP/1.1" 302 0
+INFO 2025-06-11 09:42:11,497 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4385
+INFO 2025-06-11 10:00:32,836 views 101179 134486596511296 Token refreshed: user=rose_12, user_id=1, token_exp=1749721331
+INFO 2025-06-11 10:00:32,837 basehttp 101179 134486596511296 "GET /api/refresh-token/ HTTP/1.1" 200 21
+INFO 2025-06-11 10:09:26,575 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4385
+INFO 2025-06-11 10:09:47,616 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4385
+INFO 2025-06-11 10:09:56,014 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4385
+INFO 2025-06-11 10:09:58,835 views 101179 134486596511296 User logout: user=rose_12, refresh_token=present
+INFO 2025-06-11 10:09:58,842 basehttp 101179 134486596511296 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-06-11 10:09:58,849 basehttp 101179 134486596511296 "GET /login/ HTTP/1.1" 200 2221
+INFO 2025-06-11 10:10:00,359 views 101179 134486596511296 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 10:10:00,373 basehttp 101179 134486596511296 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-06-11 10:10:00,389 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4385
+INFO 2025-06-11 10:11:16,066 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4934
+INFO 2025-06-11 10:11:30,883 basehttp 101179 134486596511296 "POST /request-pass/ HTTP/1.1" 302 0
+INFO 2025-06-11 10:11:30,901 basehttp 101179 134486596511296 "GET /home/ HTTP/1.1" 200 4934
+INFO 2025-06-11 10:22:08,977 autoreload 139221 126845491527680 Watching for file changes with StatReloader
+INFO 2025-06-11 10:22:10,296 basehttp 139221 126845409289792 "GET / HTTP/1.1" 200 2759
+INFO 2025-06-11 10:22:11,844 views 139221 126845409289792 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 10:22:11,854 basehttp 139221 126845409289792 "POST / HTTP/1.1" 302 0
+ERROR 2025-06-11 10:22:11,897 log 139221 126845409289792 Internal Server Error: /home/
+Traceback (most recent call last):
+  File "/home/businka/.local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/businka/ThirdSemester/rgr/checkplace/access_control/views.py", line 34, in home
+    ).order_by('-request_date')
+  File "/home/businka/.local/lib/python3.10/site-packages/django/db/models/query.py", line 1701, in order_by
+    obj.query.add_ordering(*field_names)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/db/models/sql/query.py", line 2249, in add_ordering
+    self.names_to_path(item.split(LOOKUP_SEP), self.model._meta)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1768, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'request_date' into field. Choices are: access_zone, created_at, id, purpose, status, updated_at, user, user_id
+ERROR 2025-06-11 10:22:11,899 basehttp 139221 126845409289792 "GET /home/ HTTP/1.1" 500 87763
+INFO 2025-06-11 10:23:37,042 autoreload 139221 126845491527680 /home/businka/ThirdSemester/rgr/checkplace/access_control/views.py changed, reloading.
+INFO 2025-06-11 10:23:37,385 autoreload 140707 133596784934912 Watching for file changes with StatReloader
+INFO 2025-06-11 10:23:39,357 basehttp 140707 133596635461184 "GET /home/ HTTP/1.1" 200 7741
+INFO 2025-06-11 10:24:42,232 autoreload 140707 133596784934912 /home/businka/ThirdSemester/rgr/checkplace/access_control/views.py changed, reloading.
+INFO 2025-06-11 10:24:42,576 autoreload 141837 139083201171456 Watching for file changes with StatReloader
+INFO 2025-06-11 10:24:43,851 basehttp 141837 139083051431488 "GET / HTTP/1.1" 200 2759
+INFO 2025-06-11 10:24:46,125 views 141837 139083051431488 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 10:24:46,136 basehttp 141837 139083051431488 "POST / HTTP/1.1" 302 0
+INFO 2025-06-11 10:24:46,161 basehttp 141837 139083051431488 "GET /home/ HTTP/1.1" 200 7741
+INFO 2025-06-11 10:26:11,648 basehttp 141837 139083051431488 "GET /home/ HTTP/1.1" 200 7757
+INFO 2025-06-11 13:18:59,672 autoreload 322116 129397734473728 Watching for file changes with StatReloader
+INFO 2025-06-11 13:19:00,782 basehttp 322116 129397644318272 "GET / HTTP/1.1" 200 2759
+INFO 2025-06-11 13:19:02,461 views 322116 129397644318272 User login successful: username=rose_12, user_id=1, token_issued=True
+INFO 2025-06-11 13:19:02,475 basehttp 322116 129397644318272 "POST / HTTP/1.1" 302 0
+INFO 2025-06-11 13:19:02,496 basehttp 322116 129397644318272 "GET /home/ HTTP/1.1" 200 7757
