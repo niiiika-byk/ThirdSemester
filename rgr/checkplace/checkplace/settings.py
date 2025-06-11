@@ -165,28 +165,33 @@ LOGGING = {
         },
     },
     'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',  # путь к файлу логов
-            'formatter': 'verbose'
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'filename': 'debug.log',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': ['console', 'file'],  # В консоль И в файл
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'checkplace': {
-            'handlers': ['file', 'console'],
+            'handlers': ['console', 'file'],  # В консоль И в файл
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
+        },
+        'auth': {
+            'handlers': ['console', 'file'],  # В консоль И в auth.log
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }
