@@ -24,4 +24,17 @@
         {% block content %}{% endblock %}
     </div>
 </body>
+<script>
+// Автоматическое обновление токена каждые 30 минут
+setInterval(() => {
+    fetch('/api/refresh-token/', {
+        method: 'GET',
+        credentials: 'include'
+    }).then(response => {
+        if (!response.ok) {
+            window.location.href = '/login/';
+        }
+    });
+}, 30 * 60 * 1000);
+</script>
 </html>
