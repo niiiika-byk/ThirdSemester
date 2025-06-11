@@ -7,16 +7,22 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from .models import AirportPass, PassRequest
 from django.contrib.auth.decorators import login_required
+from datetime import date
 from django.contrib import messages
 
 auth_logger = logging.getLogger('auth')
 
 @login_required
 def home(request):
-    context = {}
+    context = {
+        'current_date': date.today().isoformat()
+    }
     
     if request.user.role == 'ADMIN':
         context['active_passes_count'] = AirportPass.objects.filter(is_active=True).count()
+        context['pending_requests_count'] = PassRequest.objects.filter(status='PENDING').count()
+
+        context['recent_requests'] = PassRequest.objects.select_related('user').order_by('-created_at')[:5]
         
     elif request.user.role == 'SECURITY':
         context['active_passes'] = AirportPass.objects.filter(is_active=True).select_related('owner')[:20]
@@ -37,29 +43,71 @@ def home(request):
 
 @login_required
 def request_pass(request):
-    if not request.user.is_authenticated or request.user.role != 'STAFF':
-        return redirect('home')
-    
     if request.method == 'POST':
+        if request.user.role != 'STAFF':
+            messages.error(request, 'Только сотрудники могут запрашивать пропуски')
+            return redirect('home')
+            
         access_zone = request.POST.get('access_zone')
         purpose = request.POST.get('purpose')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
         
-        if access_zone and purpose:
-            PassRequest.objects.create(
-                user=request.user,
-                access_zone=access_zone,
-                purpose=purpose
-            )
-            messages.success(request, 'Ваш запрос отправлен на рассмотрение')
+        if all([access_zone, purpose, start_date, end_date]):
+            try:
+                PassRequest.objects.create(
+                    user=request.user,
+                    access_zone=access_zone,
+                    purpose=purpose,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+                messages.success(request, 'Ваш запрос отправлен на рассмотрение')
+            except Exception as e:
+                messages.error(request, f'Ошибка при создании заявки: {e}')
         else:
             messages.error(request, 'Заполните все поля')
     
     return redirect('home')
 
 @login_required
-def manage_passes(request):
-    # Заглушка - для администратора
-    return render(request, 'manage_passes.html')
+def review_request(request, request_id):
+    if request.user.role != 'ADMIN':
+        messages.error(request, 'Доступ запрещен')
+        return redirect('home')
+    
+    try:
+        pass_request = PassRequest.objects.get(id=request_id)
+    except PassRequest.DoesNotExist:
+        messages.error(request, 'Заявка не найдена')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        reason = request.POST.get('reason', '')
+        
+        if action == 'approve':
+            try:
+                AirportPass.objects.create(
+                    owner=pass_request.user,
+                    access_zone=pass_request.access_zone,
+                    issue_date=pass_request.start_date,
+                    expiry_date=pass_request.end_date,
+                    is_active=True
+                )
+                pass_request.status = 'APPROVED'
+                pass_request.save()
+                messages.success(request, 'Заявка одобрена')
+            except Exception as e:
+                messages.error(request, f'Ошибка при создании пропуска: {e}')
+            
+        elif action == 'reject':
+            pass_request.status = 'REJECTED'
+            pass_request.rejection_reason = reason
+            pass_request.save()
+            messages.success(request, 'Заявка отклонена')
+    
+    return redirect('home')
 
 @login_required
 def reports(request):

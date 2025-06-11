@@ -11,18 +11,104 @@
             Ваша роль: <strong>{{ user.get_role_display }}</strong>
         </div>
         
-        {% if user.role == 'ADMIN' %}
-            <!-- Контент для администратора -->
-            <div class="card mb-4">
+ {% if user.role == 'ADMIN' %}
+    <div class="row">
+        <!-- Блок управления пропусками -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
                 <div class="card-header bg-primary text-white">
-                    <h5>Управление пропусками (Администратор)</h5>
+                    <h5>Управление пропусками</h5>
                 </div>
                 <div class="card-body">
-                    <p>Все активные пропуски: <span class="badge bg-success">{{ active_passes_count }}</span></p>
-                    <a href="{% url 'manage_passes' %}" class="btn btn-primary">Управление пропусками</a>
-                    <a href="{% url 'reports' %}" class="btn btn-secondary">Отчеты</a>
+                    <p>Активные пропуски: <span class="badge bg-success">{{ active_passes_count }}</span></p>
+                    <p>Заявок на рассмотрении: <span class="badge bg-warning">{{ pending_requests_count }}</span></p>
                 </div>
             </div>
+        </div>
+        
+        <!-- Блок последних заявок -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5>Последние заявки</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Ник сотрудника</th>
+                                        <th>Зона</th>
+                                        <th>Статус</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in recent_requests %}
+                                    <tr>
+                                        <td>{{ req.id }}</td>
+                                        <td>{{ req.user.get_username }}</td>
+                                        <td>{{ req.get_access_zone_display }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if req.status == 'APPROVED' %}bg-success
+                                                {% elif req.status == 'REJECTED' %}bg-danger
+                                                {% else %}bg-warning text-dark{% endif %}">
+                                                {{ req.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if req.status == 'PENDING' %}
+                                            <div class="btn-group btn-group-sm">
+                                                <form method="post" action="{% url 'review_request' req.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="approve">
+                                                    <button type="submit" class="btn btn-success btn-sm">✓</button>
+                                                </form>
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" 
+                                                    data-bs-target="#rejectModal{{ req.id }}">✗</button>
+                                            </div>
+                                            
+                                            <!-- Модальное окно для причины отказа -->
+                                            <div class="modal fade" id="rejectModal{{ req.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Отклонить заявку #{{ req.id }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form method="post" action="{% url 'review_request' req.id %}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="reject">
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Причина отказа</label>
+                                                                    <textarea name="reason" class="form-control" rows="3" required></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                                <button type="submit" class="btn btn-danger">Подтвердить отклонение</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Нет последних заявок для отображения</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
             
         {% elif user.role == 'SECURITY' %}
             <!-- Контент для службы безопасности -->
@@ -64,7 +150,6 @@
             </div>
             
         {% elif user.role == 'STAFF' %}
-            <!-- Улучшенный блок для персонала -->
             <div class="card mb-4">
                 <div class="card-header bg-info text-white">
                     <h5>Мои пропуски</h5>

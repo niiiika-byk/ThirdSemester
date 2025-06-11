@@ -1,6 +1,11 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator
+from datetime import date, timedelta
+
+def default_end_date():
+    return date.today() + timedelta(days=365)
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -39,18 +44,24 @@ class PassRequest(models.Model):
         ('REJECTED', 'Отклонено'),
     ]
     
-    ZONE_CHOICES = [
+    ACCESS_ZONE_CHOICES = [
         ('TERMINAL', 'Терминал'),
         ('AIRFIELD', 'Лётное поле'),
         ('SECURE', 'Зона повышенной безопасности'),
     ]
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    access_zone = models.CharField(max_length=20, choices=ZONE_CHOICES)
+    access_zone = models.CharField(max_length=50, choices=ACCESS_ZONE_CHOICES)
     purpose = models.TextField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    start_date = models.DateField(default=date.today)
+    end_date = models.DateField(
+        default=default_end_date,
+        validators=[MinValueValidator(date.today)],
+        help_text="Дата, до которой нужен пропуск"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    rejection_reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
-        return f"{self.user.username} - {self.get_access_zone_display()} ({self.get_status_display()})"
+        return f"Заявка #{self.id} ({self.user.get_full_name()})"
