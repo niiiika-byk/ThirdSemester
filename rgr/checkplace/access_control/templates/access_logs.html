@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Журнал доступа к зонам{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Тип события</label>
+                    <select name="type" class="form-select">
+                        <option value="">Все типы</option>
+                        <option value="GRANTED" {% if filters.selected_type == 'GRANTED' %}selected{% endif %}>Разрешённые</option>
+                        <option value="DENIED" {% if filters.selected_type == 'DENIED' %}selected{% endif %}>Запрещённые</option>
+                        <option value="ALERT" {% if filters.selected_type == 'ALERT' %}selected{% endif %}>Тревоги</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Период</label>
+                    <select name="time_range" class="form-select">
+                        <option value="1h" {% if filters.selected_time == '1h' %}selected{% endif %}>Последний час</option>
+                        <option value="12h" {% if filters.selected_time == '12h' %}selected{% endif %}>12 часов</option>
+                        <option value="24h" {% if filters.selected_time == '24h' %}selected{% endif %}>24 часа</option>
+                        <option value="7d" {% if filters.selected_time == '7d' %}selected{% endif %}>7 дней</option>
+                    </select>
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-primary">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <!-- ... (как в предыдущем примере) ... -->
+    </div>
+
+    <!-- Таблица логов -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>Журнал попыток доступа</span>
+                <span>Всего записей: {{ stats.total }}</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <!-- ... (заголовки таблицы как раньше) ... -->
+                    <tbody>
+                        {% for attempt in access_logs %}
+                        <tr class="{% if attempt.attempt_type == 'ALERT' %}table-danger{% elif attempt.attempt_type == 'DENIED' %}table-warning{% else %}table-success{% endif %}">
+                            <td>{{ attempt.timestamp|date:"H:i:s d.m.Y" }}</td>
+                            <td>{{ attempt.user.get_username }}</td>
+                            <td>{{ attempt.zone.name }}</td>
+                            <td>
+                                {% if attempt.pass_instance %}
+                                    #{{ attempt.pass_instance.id }} (Ур. {{ attempt.pass_instance.access_level }})
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ attempt.get_attempt_type_display }}</td>
+                            <td>{{ attempt.details }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">Нет данных для отображения</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

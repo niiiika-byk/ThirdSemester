@@ -119,3 +119,43 @@ INFO 2025-06-12 07:35:26,472 basehttp 69590 123880116053568 "POST /check_access/
 INFO 2025-06-12 07:35:46,100 basehttp 69590 123880116053568 "GET /check_access/ HTTP/1.1" 200 5531
 INFO 2025-06-12 07:35:49,514 basehttp 69590 123880116053568 "POST /check_access/ HTTP/1.1" 200 610
 INFO 2025-06-12 07:35:53,640 basehttp 69590 123880116053568 "POST /check_access/ HTTP/1.1" 200 491
+INFO 2025-06-12 09:50:30,593 autoreload 1583 136017250021376 Watching for file changes with StatReloader
+INFO 2025-06-12 11:17:26,093 autoreload 76736 132396775882752 Watching for file changes with StatReloader
+INFO 2025-06-12 11:17:52,233 autoreload 77290 123720278147072 Watching for file changes with StatReloader
+INFO 2025-06-12 11:26:35,837 autoreload 87311 136767740596224 Watching for file changes with StatReloader
+INFO 2025-06-12 11:26:37,119 basehttp 87311 136767649863232 "GET / HTTP/1.1" 200 2756
+WARNING 2025-06-12 11:26:37,346 log 87311 136767649863232 Not Found: /favicon.ico
+WARNING 2025-06-12 11:26:37,346 basehttp 87311 136767649863232 "GET /favicon.ico HTTP/1.1" 404 4843
+INFO 2025-06-12 11:26:39,387 views 87311 136767649863232 User login successful: username=user, user_id=2, token_issued=True
+INFO 2025-06-12 11:26:39,399 basehttp 87311 136767649863232 "POST / HTTP/1.1" 302 0
+INFO 2025-06-12 11:26:39,427 basehttp 87311 136767649863232 "GET /home/ HTTP/1.1" 200 8617
+ERROR 2025-06-12 11:26:44,752 log 87311 136767649863232 Internal Server Error: /access-logs/
+Traceback (most recent call last):
+  File "/home/businka/.local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/businka/ThirdSemester/rgr/checkplace/access_control/views.py", line 334, in access_logs_view
+    return render(request, 'access_control/access_logs.html', context)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/businka/.local/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: access_control/access_logs.html
+ERROR 2025-06-12 11:26:44,753 basehttp 87311 136767649863232 "GET /access-logs/ HTTP/1.1" 500 83681
+INFO 2025-06-12 11:26:58,191 autoreload 87311 136767740596224 /home/businka/ThirdSemester/rgr/checkplace/access_control/views.py changed, reloading.
+INFO 2025-06-12 11:26:58,491 autoreload 87811 126266464677888 Watching for file changes with StatReloader
+INFO 2025-06-12 11:26:59,598 basehttp 87811 126266383525440 "GET /access-logs/ HTTP/1.1" 200 4195
+INFO 2025-06-12 11:27:16,234 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:27:20,483 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:27:58,140 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:27:59,449 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:30:32,810 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:31:33,413 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:36:39,920 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 4195
+INFO 2025-06-12 11:55:11,014 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=1h HTTP/1.1" 200 7709
+INFO 2025-06-12 11:55:57,146 basehttp 87811 126266383525440 "GET /access-logs/?type=GRANTED&time_range=1h HTTP/1.1" 200 5244
+INFO 2025-06-12 11:55:59,252 basehttp 87811 126266383525440 "GET /access-logs/?type=GRANTED&time_range=12h HTTP/1.1" 200 5244
+INFO 2025-06-12 11:56:03,360 basehttp 87811 126266383525440 "GET /access-logs/?type=&time_range=12h HTTP/1.1" 200 7709

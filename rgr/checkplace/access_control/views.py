@@ -5,10 +5,12 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
-from .models import AirportPass, PassRequest, AccessZone, CustomUser
+from .models import AirportPass, PassRequest, AccessZone, CustomUser, AccessAttempt
 from django.contrib.auth.decorators import login_required
-from datetime import date
+from datetime import date, timedelta
 from django.contrib import messages
+from django.views.generic import TemplateView
+from django.utils import timezone
 
 auth_logger = logging.getLogger('auth')
 
@@ -283,3 +285,50 @@ def refresh_token(request):
         f"Refresh token missing: user={'anonymous' if not request.user.is_authenticated else request.user.username}"
     )
     return JsonResponse({'status': 'error', 'message': 'Refresh token missing'}, status=400)
+    
+def access_logs_view(request):
+    """Функция-представление для отображения логов доступа"""
+    # Проверка прав доступа (если нужно)
+    if not request.user.is_authenticated or request.user.role != 'SECURITY':
+        return render(request, 'access_denied.html', status=403)
+    
+    # Получаем параметры фильтрации из GET-запроса
+    attempt_type = request.GET.get('type', '')
+    time_range = request.GET.get('time_range', '24h')
+    
+    # Базовый QuerySet
+    logs_queryset = AccessAttempt.objects.all().order_by('-timestamp')
+    
+    # Фильтрация по типу попытки
+    if attempt_type in ['GRANTED', 'DENIED', 'ALERT']:
+        logs_queryset = logs_queryset.filter(attempt_type=attempt_type)
+    
+    # Фильтрация по временному диапазону
+    now = timezone.now()
+    if time_range == '1h':
+        start_time = now - timedelta(hours=1)
+    elif time_range == '12h':
+        start_time = now - timedelta(hours=12)
+    elif time_range == '7d':
+        start_time = now - timedelta(days=7)
+    else:  # по умолчанию 24 часа
+        start_time = now - timedelta(hours=24)
+    
+    stats_queryset = AccessAttempt.objects.filter(timestamp__gte=start_time)
+    
+    # Подготовка контекста
+    context = {
+        'access_logs': logs_queryset[:100],  # последние 100 записей
+        'stats': {
+            'total': stats_queryset.count(),
+            'granted': stats_queryset.filter(attempt_type='GRANTED').count(),
+            'denied': stats_queryset.filter(attempt_type='DENIED').count(),
+            'alerts': stats_queryset.filter(attempt_type='ALERT').count(),
+        },
+        'filters': {
+            'selected_type': attempt_type,
+            'selected_time': time_range,
+        }
+    }
+    
+    return render(request, 'access_logs.html', context)

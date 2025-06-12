@@ -111,43 +111,54 @@
         </div>
             
         {% elif user.role == 'SECURITY' %}
-            <!-- Контент для службы безопасности -->
-            <div class="card mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <h5>Контроль доступа (Служба безопасности)</h5>
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5>Контроль доступа (Служба безопасности)</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <a href="{% url 'check_access' %}" class="btn btn-warning">
+                        <i class="fas fa-id-card"></i> Проверить пропуск
+                    </a>
+                    <a href="{% url 'access_logs' %}" class="btn btn-danger">
+                        <i class="fas fa-shield-alt"></i> Отслеживание доступа к зонам
+                    </a>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Номер пропуска</th>
-                                    <th>Владелец</th>
-                                    <th>Зона доступа</th>
-                                    <th>Срок действия</th>
-                                    <th>Статус</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for pass in active_passes %}
-                                <tr>
-                                    <td>{{ pass.id }}</td>
-                                    <td>{{ pass.owner.get_username }}</td>
-                                    <td>{{ pass.access_zone }}</td>
-                                    <td>{{ pass.expiry_date|date:"d.m.Y" }}</td>
-                                    <td><span class="badge bg-success">Активен</span></td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center">Нет активных пропусков</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <a href="{% url 'check_access' %}" class="btn btn-warning">Проверить пропуск</a>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Номер пропуска</th>
+                                <th>Владелец</th>
+                                <th>Зона доступа</th>
+                                <th>Срок действия</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pass in active_passes %}
+                            <tr>
+                                <td>{{ pass.id }}</td>
+                                <td>{{ pass.owner.get_username }}</td>
+                                <td>{{ pass.access_zone }}</td>
+                                <td>{{ pass.expiry_date|date:"d.m.Y" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if pass.is_active %}success{% else %}secondary{% endif %}">
+                                        {% if pass.is_active %}Активен{% else %}Неактивен{% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Нет активных пропусков</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
             
         {% elif user.role == 'STAFF' %}
             <div class="card mb-4">

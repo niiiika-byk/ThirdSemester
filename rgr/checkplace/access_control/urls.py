@@ -11,4 +11,5 @@ urlpatterns = [
     path('review-request/<int:request_id>/', views.review_request, name='review_request'),
     path('check_access/', views.check_access, name='check_access'),
     path('request-pass/', views.request_pass, name='request_pass'),
+    path('access-logs/', views.access_logs_view, name='access_logs'),
 ]

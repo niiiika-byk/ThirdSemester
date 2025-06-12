@@ -99,3 +99,74 @@ class AccessZone(models.Model):
 
     def __str__(self):
         return f"{self.name} (Уровень {self.required_access_level})"
+    
+class AccessAttempt(models.Model):
+    ATTEMPT_TYPES = [
+        ('GRANTED', 'Доступ разрешён'),
+        ('DENIED', 'Доступ запрещён'),
+        ('ALERT', 'Попытка доступа в запрещённую зону'),
+    ]
+    
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь'
+    )
+    pass_instance = models.ForeignKey(
+        AirportPass,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Пропуск'
+    )
+    zone = models.ForeignKey(
+        AccessZone,
+        on_delete=models.CASCADE,
+        verbose_name='Целевая зона'
+    )
+    attempt_type = models.CharField(
+        max_length=10,
+        choices=ATTEMPT_TYPES,
+        verbose_name='Тип попытки'
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Время попытки'
+    )
+    details = models.TextField(
+        blank=True,
+        verbose_name='Дополнительная информация'
+    )
+
+    def __str__(self):
+        return f"Попытка {self.user} в {self.zone} ({self.get_attempt_type_display()})"
+    
+    @classmethod
+    def generate_test_attempt(cls):
+        """Генерирует и сохраняет тестовую попытку доступа"""
+        user = cls.objects.filter(role='STAFF', is_active=True).order_by('?').first()
+        zone = AccessZone.get_random_zone()
+        
+        attempt = cls(
+            user=user,
+            zone=zone,
+            timestamp=timezone.now()
+        )
+        
+        # Проверяем есть ли у пользователя активный пропуск
+        pass_instance = AirportPass.get_active_pass_for_user(user)
+        
+        if pass_instance:
+            attempt.pass_instance = pass_instance
+            if pass_instance.check_access(zone):
+                attempt.attempt_type = 'GRANTED'
+                attempt.details = "Автотест: доступ разрешен"
+            else:
+                attempt.attempt_type = 'DENIED'
+                attempt.details = f"Автотест: недостаточный уровень ({pass_instance.access_level}<{zone.required_access_level})"
+        else:
+            attempt.attempt_type = 'ALERT'
+            attempt.details = "Автотест: нет активного пропуска"
+        
+        attempt.save()
+        return attempt
