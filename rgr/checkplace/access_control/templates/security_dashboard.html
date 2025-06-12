@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Проверка пропуска{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        Проверка доступа
+    </div>
+    <div class="card-body">
+        <form id="accessCheckForm" method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Сотрудник</label>
+                    <select name="user_id" class="form-select" required>
+                        <option value="">Выберите сотрудника...</option>
+                        {% for user in staff_users %}
+                        <option value="{{ user.id }}">
+                            {{ user.get_username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Зона доступа</label>
+                    <select name="zone_id" class="form-select" required>
+                        <option value="">Выберите зону...</option>
+                        {% for zone in zones %}
+                        <option value="{{ zone.id }}">
+                            {{ zone.name }} (Требуется: {{ zone.get_required_access_level_display }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Проверить доступ</button>
+        </form>
+        
+        <div id="accessResult" class="mt-3" style="display:none;">
+            <div class="alert alert-success" id="grantedAlert">
+                Доступ <strong>разрешен</strong>: <span id="accessMessage"></span>
+            </div>
+            <div class="alert alert-danger" id="deniedAlert">
+                Доступ <strong>запрещен</strong>: <span id="denialMessage"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Добавьте JavaScript для обработки формы -->
+<script>
+document.getElementById('accessCheckForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch('{% url "check_access" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('accessResult');
+        resultDiv.style.display = 'block';
+        
+        if (data.status === 'access_granted') {
+            document.getElementById('grantedAlert').style.display = 'block';
+            document.getElementById('deniedAlert').style.display = 'none';
+            document.getElementById('accessMessage').textContent = data.message;
+        } else {
+            document.getElementById('grantedAlert').style.display = 'none';
+            document.getElementById('deniedAlert').style.display = 'block';
+            document.getElementById('denialMessage').textContent = data.message;
+        }
+    });
+});
+</script>
+{% endblock %}

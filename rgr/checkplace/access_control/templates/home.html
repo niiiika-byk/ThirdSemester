@@ -132,7 +132,7 @@
                                 {% for pass in active_passes %}
                                 <tr>
                                     <td>{{ pass.id }}</td>
-                                    <td>{{ pass.owner.get_full_name }}</td>
+                                    <td>{{ pass.owner.get_username }}</td>
                                     <td>{{ pass.access_zone }}</td>
                                     <td>{{ pass.expiry_date|date:"d.m.Y" }}</td>
                                     <td><span class="badge bg-success">Активен</span></td>
@@ -145,7 +145,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <a href="{% url 'verify_pass' %}" class="btn btn-warning">Проверить пропуск</a>
+                    <a href="{% url 'check_access' %}" class="btn btn-warning">Проверить пропуск</a>
                 </div>
             </div>
             

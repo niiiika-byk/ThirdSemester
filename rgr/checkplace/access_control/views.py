@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
-from .models import AirportPass, PassRequest
+from .models import AirportPass, PassRequest, AccessZone, CustomUser
 from django.contrib.auth.decorators import login_required
 from datetime import date
 from django.contrib import messages
@@ -110,14 +110,56 @@ def review_request(request, request_id):
     return redirect('home')
 
 @login_required
-def reports(request):
-    # Заглушка - для администратора
-    return render(request, 'reports.html')
+def check_access(request):
+    if request.user.role != 'SECURITY':
+        messages.error(request, 'Доступ запрещен: только для службы безопасности')
+        return redirect('home')
+    
+    zones = AccessZone.objects.all()
+    
+    # Исправленный запрос для получения персонала с активными пропусками
+    staff_users = CustomUser.objects.filter(
+        role='STAFF'
+    ).prefetch_related('airportpass_set').filter(
+        airportpass__is_active=True
+    ).distinct()
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        zone_id = request.POST.get('zone_id')
+        
+        try:
+            zone = AccessZone.objects.get(id=zone_id)
+            user = CustomUser.objects.get(id=user_id)
+            user_pass = user.airportpass_set.filter(is_active=True).first()
+            
+            if not user_pass:
+                message = "У сотрудника нет активного пропуска"
+                access_granted = False
+            elif user_pass.has_access_to(zone.zone_type):
+                message = f"Доступ в {zone.name} разрешен"
+                access_granted = True
+            else:
+                message = f"Недостаточный уровень доступа (Требуется: {zone.get_required_access_level_display()})"
+                access_granted = False
+                
+            return JsonResponse({
+                'status': 'access_granted' if access_granted else 'access_denied',
+                'message': message,
+                'required_level': zone.get_required_access_level_display(),
+                'user_level': user_pass.get_access_level_display() if user_pass else 'Нет пропуска'
+            })
+            
+        except (AccessZone.DoesNotExist, CustomUser.DoesNotExist) as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Ошибка: неверные данные'
+            }, status=400)
 
-@login_required
-def verify_pass(request):
-    # Заглушка - для службы безопасности
-    return render(request, 'verify_pass.html')
+    return render(request, 'security_dashboard.html', {
+        'zones': zones,
+        'staff_users': staff_users,
+    })
 
 def register(request):
     if request.method == 'POST':

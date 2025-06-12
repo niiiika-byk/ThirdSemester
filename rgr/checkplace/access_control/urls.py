@@ -9,7 +9,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('api/refresh-token/', views.refresh_token, name='refresh_token'),
     path('review-request/<int:request_id>/', views.review_request, name='review_request'),
-    path('reports/', views.reports, name='reports'),
-    path('verify-pass/', views.verify_pass, name='verify_pass'),
+    path('check_access/', views.check_access, name='check_access'),
     path('request-pass/', views.request_pass, name='request_pass'),
 ]

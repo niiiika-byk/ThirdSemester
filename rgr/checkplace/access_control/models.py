@@ -21,13 +21,20 @@ class AirportPass(models.Model):
         ('TERMINAL', 'Терминал'),
         ('AIRFIELD', 'Лётное поле'),
         ('SECURE', 'Зона повышенной безопасности'),
-        ('ADMIN', 'Административная зона'),
+    ]
+
+    ACCESS_LEVELS = [
+        (1, 'Базовый (Терминал)'),
+        (2, 'Средний (Лётное поле)'),
+        (3, 'Высокий (Зона безопасности)'),
+        (4, 'Полный (Все зоны)'),
     ]
     
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     issue_date = models.DateField(auto_now_add=True)
     expiry_date = models.DateField()
     access_zone = models.CharField(max_length=10, choices=ZONE_CHOICES)
+    access_level = models.IntegerField(choices=ACCESS_LEVELS, default=1)
     is_active = models.BooleanField(default=True)
     
     @property
@@ -36,6 +43,15 @@ class AirportPass(models.Model):
     
     def __str__(self):
         return f"Пропуск #{self.id} ({self.get_access_zone_display()})"
+        
+    def has_access_to(self, zone):
+        zone_levels = {
+            'TERMINAL': 1,
+            'AIRFIELD': 2,
+            'SECURE': 3
+        }
+        required_level = zone_levels.get(zone, 4)
+        return self.access_level >= required_level
     
 class PassRequest(models.Model):
     STATUS_CHOICES = [
@@ -65,3 +81,21 @@ class PassRequest(models.Model):
 
     def __str__(self):
         return f"Заявка #{self.id} ({self.user.get_full_name()})"
+
+class AccessZone(models.Model):
+    ZONE_TYPES = [
+        ('TERMINAL', 'Терминал'),
+        ('AIRFIELD', 'Лётное поле'),
+        ('SECURE', 'Зона безопасности'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    zone_type = models.CharField(max_length=20, choices=ZONE_TYPES)
+    required_access_level = models.IntegerField(
+        choices=AirportPass.ACCESS_LEVELS,
+        default=1
+    )
+    description = models.TextField()
+
+    def __str__(self):
+        return f"{self.name} (Уровень {self.required_access_level})"
