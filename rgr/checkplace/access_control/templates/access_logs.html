@@ -33,9 +33,7 @@
         </div>
     </div>
 
-    <!-- Статистика -->
     <div class="row mb-4">
-        <!-- ... (как в предыдущем примере) ... -->
     </div>
 
     <!-- Таблица логов -->
@@ -49,7 +47,6 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-                    <!-- ... (заголовки таблицы как раньше) ... -->
                     <tbody>
                         {% for attempt in access_logs %}
                         <tr class="{% if attempt.attempt_type == 'ALERT' %}table-danger{% elif attempt.attempt_type == 'DENIED' %}table-warning{% else %}table-success{% endif %}">
