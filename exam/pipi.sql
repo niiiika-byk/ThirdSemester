@@ -1,5 +1,6 @@
 /*1 билет*/
 -- 2 вопрос
+
 -- Создание таблицы Employees (Сотрудники)
 CREATE TABLE Employees (
     employee_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -80,3 +81,42 @@ GROUP BY
     i.incident_type
 ORDER BY 
     incident_count DESC;
+
+/*2 билет*/
+-- 3 вопрос
+
+CREATE FUNCTION fn_avg_response_time(employee_id INT) 
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE avg_time DECIMAL(10,2);
+    SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) INTO avg_time
+    FROM Incidents
+    WHERE employee_id = employee_id AND resolved_at IS NOT NULL;
+    RETURN IFNULL(avg_time, 0);
+END;
+
+-- Пример вызова:
+SELECT employee_id, full_name, fn_avg_response_time(employee_id) AS avg_hours
+FROM Employees
+WHERE employee_id = 5;
+
+-- Для PostgreSQL (с проверкой диапазона)
+CREATE OR REPLACE FUNCTION fn_threat_validation(incident_id INT) 
+RETURNS BOOLEAN AS $$
+DECLARE
+    threat_level INT;
+BEGIN
+    SELECT i.threat_level INTO threat_level
+    FROM Incidents i
+    WHERE i.incident_id = $1;
+    
+    RETURN (threat_level BETWEEN 1 AND 5);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Пример вызова:
+SELECT incident_id, title, threat_level, fn_threat_validation(incident_id) AS is_valid
+FROM Incidents
+WHERE incident_id = 100;
+
