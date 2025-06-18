@@ -311,3 +311,41 @@ ORDER BY count_of_open_incidents DESC;
 -- Получить данные для конкретного сотрудника
 SELECT * FROM OpenIncidentsByEmployee
 WHERE employee_id = 123;
+
+--8 билет
+--3 вопрос
+SELECT 
+    i.incident_id,
+    i.title AS incident_title,
+    i.status,
+    i.created_at AS incident_date,
+    s.source_id,
+    s.source_type,
+    s.source_value,
+    s.is_malicious
+FROM 
+    incidents i
+INNER JOIN 
+    incident_sources is ON i.incident_id = is.incident_id
+INNER JOIN 
+    sources s ON is.source_id = s.source_id
+ORDER BY 
+    i.created_at DESC;
+
+SELECT 
+    s.source_id,
+    s.source_type,
+    s.source_value,
+    s.is_malicious,
+    s.first_detected,
+    i.incident_id,
+    i.title AS incident_title,
+    i.status
+FROM 
+    sources s
+LEFT JOIN 
+    incident_sources is ON s.source_id = is.source_id
+LEFT JOIN 
+    incidents i ON is.incident_id = i.incident_id
+ORDER BY 
+    s.source_id;
