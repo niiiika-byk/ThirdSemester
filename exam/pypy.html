@@ -1,0 +1,116 @@
+<!---3 билет-->
+<!---2 вопрос-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Список инцидентов</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+</head>
+<body>
+    <nav>
+        <a hx-get="/" hx-target="body" hx-push-url="true">Список инцидентов</a>
+        <a hx-get="/add/" hx-target="body" hx-push-url="true">Добавить инцидент</a>
+    </nav>
+
+    <h2>Список инцидентов</h2>
+
+    <div id="incident-list">
+        {% for incident in incidents %}
+        <div class="incident">
+            <h3>{{ incident.title }}</h3>
+            <p>{{ incident.description }}</p>
+            <p>
+                <strong>Статус:</strong> 
+                <span class="status status-{{ incident.status }}">
+                    {{ incident.get_status_display }}
+                </span>
+            </p>
+            <p><strong>Дата создания:</strong> {{ incident.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+        {% empty %}
+        <p>Нет зарегистрированных инцидентов</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Обработка успешного добавления инцидента
+        document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+            if (evt.detail.requestConfig.path === '/add/' && 
+                evt.detail.requestConfig.verb === 'post') {
+                htmx.ajax('GET', '/', { target: 'body', pushUrl: true });
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Добавить инцидент</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+</head>
+<body>
+    <nav>
+        <a hx-get="/" hx-target="body" hx-push-url="true">Список инцидентов</a>
+        <a hx-get="/add/" hx-target="body" hx-push-url="true">Добавить инцидент</a>
+    </nav>
+
+    <h2>Добавить новый инцидент</h2>
+
+    <form hx-post="/add/" hx-target="#form-messages">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="title">Название инцидента:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Описание:</label>
+            <textarea id="description" name="description" required></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="status">Статус:</label>
+            <select id="status" name="status">
+                <option value="open">Открыт</option>
+                <option value="in_progress">В работе</option>
+                <option value="closed">Закрыт</option>
+            </select>
+        </div>
+        
+        <button type="submit">Добавить инцидент</button>
+    </form>
+
+    <div id="form-messages"></div>
+
+    <script>
+        // Обработка успешного добавления
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.successful && evt.detail.requestConfig.path === '/add/' && 
+                evt.detail.requestConfig.verb === 'post') {
+                // Очищаем форму после успешного добавления
+                document.querySelector('form').reset();
+                
+                // Показываем сообщение об успехе
+                const messages = document.getElementById('form-messages');
+                messages.innerHTML = `
+                    <div class="message success">
+                        Инцидент успешно добавлен! Перенаправление...
+                    </div>
+                `;
+                
+                // Через 2 секунды переходим к списку
+                setTimeout(() => {
+                    htmx.ajax('GET', '/', { target: 'body', pushUrl: true });
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
