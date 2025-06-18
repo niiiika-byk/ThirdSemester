@@ -177,3 +177,25 @@ BEGIN
     
     RETURN NULL;
 END;
+
+--5 билет
+--3 вопрос
+
+SELECT 
+    incident_type,
+    COUNT(*) AS incident_count,
+    AVG(threat_level) AS avg_threat_level,
+    MAX(created_at) AS last_incident_date
+FROM (
+    -- Подзапрос как временная таблица
+    SELECT 
+        id,
+        incident_type,
+        threat_level,
+        created_at
+    FROM incidents
+    WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+) AS recent_incidents
+GROUP BY incident_type
+HAVING AVG(threat_level) > 3
+ORDER BY avg_threat_level DESC;
