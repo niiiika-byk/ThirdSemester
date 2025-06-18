@@ -136,3 +136,140 @@ urlpatterns = [
     path('incidents/<int:pk>/', views.delete_incident, name='delete-incident'),
 ]
 
+#8 билет
+#2 вопрос
+from datetime import datetime
+from typing import List, Optional
+
+class IncidentService:
+    def __init__(self, incident_repository):
+        self.incident_repository = incident_repository
+
+    def create_incident(self, data: dict) -> dict:
+        """
+        Создание нового инцидента с валидацией данных
+        :param data: Словарь с данными инцидента
+        :return: Созданный инцидент
+        """
+        # Валидация данных
+        if not data.get('title') or len(data['title']) < 5:
+            raise ValueError("Название инцидента должно содержать минимум 5 символов")
+        
+        if not data.get('description') or len(data['description']) < 10:
+            raise ValueError("Описание инцидента должно содержать минимум 10 символов")
+        
+        threat_level = data.get('threat_level', 3)
+        if not (1 <= threat_level <= 5):
+            raise ValueError("Уровень угрозы должен быть в диапазоне 1-5")
+
+        # Установка значений по умолчанию
+        incident_data = {
+            'title': data['title'],
+            'description': data['description'],
+            'status': 'open',
+            'threat_level': threat_level,
+            'created_at': datetime.now(),
+            'updated_at': datetime.now(),
+            'assigned_to': data.get('assigned_to')
+        }
+
+        # Сохранение через DAL
+        return self.incident_repository.create(incident_data)
+
+    def close_incident(self, incident_id: int, resolution_comment: str = None) -> dict:
+        """
+        Закрытие инцидента с проверкой бизнес-правил
+        :param incident_id: ID инцидента
+        :param resolution_comment: Комментарий при закрытии
+        :return: Обновленный инцидент
+        """
+        incident = self.incident_repository.get_by_id(incident_id)
+        
+        if not incident:
+            raise ValueError("Инцидент не найден")
+        
+        if incident['status'] == 'closed':
+            raise ValueError("Инцидент уже закрыт")
+        
+        # Проверка бизнес-правил
+        if incident['threat_level'] >= 4 and not resolution_comment:
+            raise ValueError("Для инцидентов с высоким уровнем угрозы требуется комментарий решения")
+        
+        if self.incident_repository.has_pending_actions(incident_id):
+            raise ValueError("Не все связанные действия завершены")
+
+        # Подготовка данных для обновления
+        update_data = {
+            'status': 'closed',
+            'closed_at': datetime.now(),
+            'updated_at': datetime.now()
+        }
+        
+        if resolution_comment:
+            update_data['resolution_comment'] = resolution_comment
+
+        return self.incident_repository.update(incident_id, update_data)
+
+    def get_open_incidents_by_threat(self, min_threat_level: int) -> List[dict]:
+        """
+        Получение открытых инцидентов с уровнем угрозы выше заданного
+        :param min_threat_level: Минимальный уровень угрозы
+        :return: Список инцидентов
+        """
+        if not (1 <= min_threat_level <= 5):
+            raise ValueError("Уровень угрозы должен быть в диапазоне 1-5")
+        
+        return self.incident_repository.find_open_by_threat(min_threat_level)
+
+#DAL
+class IncidentRepository:
+    def create(self, data: dict) -> dict:
+        """Абстрактный метод для создания инцидента"""
+        pass
+    
+    def get_by_id(self, incident_id: int) -> Optional[dict]:
+        """Абстрактный метод для получения инцидента по ID"""
+        pass
+    
+    def update(self, incident_id: int, data: dict) -> dict:
+        """Абстрактный метод для обновления инцидента"""
+        pass
+    
+    def find_open_by_threat(self, min_threat_level: int) -> List[dict]:
+        """Абстрактный метод для поиска по уровню угрозы"""
+        pass
+    
+    def has_pending_actions(self, incident_id: int) -> bool:
+        """Абстрактный метод для проверки незавершенных действий"""
+        pass
+
+#использование
+# Инициализация
+repository = IncidentRepository()  # Реальная или mock-реализация
+incident_service = IncidentService(repository)
+
+# Создание инцидента
+try:
+    new_incident = incident_service.create_incident({
+        'title': 'Утечка данных',
+        'description': 'Обнаружена утечка персональных данных',
+        'threat_level': 4
+    })
+    print(f"Создан инцидент: {new_incident}")
+except ValueError as e:
+    print(f"Ошибка: {e}")
+
+# Закрытие инцидента
+try:
+    closed_incident = incident_service.close_incident(
+        incident_id=123,
+        resolution_comment="Проблема решена, данные защищены"
+    )
+    print(f"Инцидент закрыт: {closed_incident}")
+except ValueError as e:
+    print(f"Ошибка при закрытии: {e}")
+
+# Получение опасных инцидентов
+critical_incidents = incident_service.get_open_incidents_by_threat(4)
+print(f"Критические инциденты: {critical_incidents}")
+
