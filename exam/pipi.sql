@@ -226,3 +226,88 @@ SELECT
         '2023-01-01', 
         '2023-12-31'
     ) AS vulnerabilities_count;
+
+--7 билет
+--2 вопрос
+CREATE TABLE IF NOT EXISTS vulnerability_audit (
+    audit_id SERIAL PRIMARY KEY,
+    vulnerability_id INT NOT NULL,
+    old_status VARCHAR(50),
+    new_status VARCHAR(50) NOT NULL,
+    audit_message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(vulnerability_id)
+);
+
+CREATE OR REPLACE FUNCTION check_incidents_after_vulnerability_fix()
+RETURNS TRIGGER AS $$
+DECLARE
+    open_incidents_count INTEGER;
+BEGIN
+    -- Проверяем, изменился ли статус на "Fixed"
+    IF NEW.status = 'Fixed' AND OLD.status != 'Fixed' THEN
+        -- Проверяем наличие связанных открытых инцидентов
+        SELECT COUNT(*) INTO open_incidents_count
+        FROM incident_vulnerabilities iv
+        JOIN incidents i ON iv.incident_id = i.incident_id
+        WHERE iv.vulnerability_id = NEW.vulnerability_id
+        AND i.status = 'Open';
+        
+        -- Если есть открытые инциденты
+        IF open_incidents_count > 0 THEN
+            -- Вариант 1: Обновляем статус инцидентов
+            UPDATE incidents
+            SET status = 'Needs re-check',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE incident_id IN (
+                SELECT incident_id 
+                FROM incident_vulnerabilities
+                WHERE vulnerability_id = NEW.vulnerability_id
+            ) AND status = 'Open';
+            
+            -- Вариант 2: Добавляем запись в аудит
+            INSERT INTO vulnerability_audit (
+                vulnerability_id,
+                old_status,
+                new_status,
+                audit_message
+            ) VALUES (
+                NEW.vulnerability_id,
+                OLD.status,
+                NEW.status,
+                'Vulnerability marked as fixed, but ' || open_incidents_count || 
+                ' open incidents depend on it. Status changed to "Needs re-check".'
+            );
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER after_vulnerability_status_update
+AFTER UPDATE ON vulnerabilities
+FOR EACH ROW
+EXECUTE FUNCTION check_incidents_after_vulnerability_fix();
+
+--3 вопрос
+CREATE OR REPLACE VIEW OpenIncidentsByEmployee AS
+SELECT 
+    i.assigned_employee_id AS employee_id,
+    COUNT(i.incident_id) AS count_of_open_incidents,
+    ROUND(AVG(i.threat_level), 2) AS avg_threat_level
+FROM 
+    Incidents i
+WHERE 
+    i.status = 'Open'
+GROUP BY 
+    i.assigned_employee_id;
+
+--использование
+-- Получить статистику по всем сотрудникам
+SELECT * FROM OpenIncidentsByEmployee
+ORDER BY count_of_open_incidents DESC;
+
+-- Получить данные для конкретного сотрудника
+SELECT * FROM OpenIncidentsByEmployee
+WHERE employee_id = 123;
