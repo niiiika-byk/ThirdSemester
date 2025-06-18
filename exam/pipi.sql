@@ -349,3 +349,92 @@ LEFT JOIN
     incidents i ON is.incident_id = i.incident_id
 ORDER BY 
     s.source_id;
+
+--9 билет 
+--2 задание
+CREATE TABLE Incident_Employee (
+    incident_id INT NOT NULL,
+    employee_id INT NOT NULL,
+    role_on_incident VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (incident_id, employee_id),
+    FOREIGN KEY (incident_id) REFERENCES Incidents(id),
+    FOREIGN KEY (employee_id) REFERENCES Employees(id),
+    
+    INDEX (incident_id),
+    INDEX (employee_id)
+
+--3 задание
+-- Таблица сотрудников
+CREATE TABLE Employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+-- Таблица инцидентов
+CREATE TABLE Incidents (
+    id INT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('OPEN', 'CLOSED')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица-связка
+CREATE TABLE Incident_Employee (
+    incident_id INT NOT NULL,
+    employee_id INT NOT NULL,
+    role_on_incident VARCHAR(100) NOT NULL,
+    PRIMARY KEY (incident_id, employee_id),
+    FOREIGN KEY (incident_id) REFERENCES Incidents(id),
+    FOREIGN KEY (employee_id) REFERENCES Employees(id)
+);
+
+CREATE TRIGGER prevent_employee_deletion
+BEFORE DELETE ON Employees
+FOR EACH ROW
+BEGIN
+    DECLARE open_incidents_count INT;
+    
+    -- Проверяем количество открытых инцидентов у сотрудника
+    SELECT COUNT(*) INTO open_incidents_count
+    FROM Incident_Employee ie
+    JOIN Incidents i ON ie.incident_id = i.id
+    WHERE ie.employee_id = OLD.id AND i.status = 'OPEN';
+    
+    -- Если есть открытые инциденты, запрещаем удаление
+    IF open_incidents_count > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Нельзя удалить сотрудника, привязанного к открытым инцидентам';
+    END IF;
+END
+
+-- 1. Добавляем тестовые данные
+INSERT INTO Employees (id, name) VALUES 
+(1, 'Иван Петров'),
+(2, 'Мария Сидорова'),
+(3, 'Алексей Иванов');
+
+INSERT INTO Incidents (id, title, status) VALUES 
+(101, 'Сбой в системе', 'OPEN'),
+(102, 'Обновление ПО', 'CLOSED'),
+(103, 'Проблема с сетью', 'OPEN');
+
+INSERT INTO Incident_Employee (incident_id, employee_id, role_on_incident) VALUES 
+(101, 1, 'Аналитик'),
+(101, 2, 'Разработчик'),
+(102, 1, 'Тестировщик'),
+(103, 3, 'Руководитель');
+
+-- 2. Пробуем удалить сотрудника без открытых инцидентов (должно разрешиться)
+DELETE FROM Employees WHERE id = 1; -- Успешно, так как инцидент 102 закрыт
+
+-- 3. Пробуем удалить сотрудника с открытыми инцидентами (должно запретиться)
+DELETE FROM Employees WHERE id = 2; -- Ошибка: "Нельзя удалить сотрудника, привязанного к открытым инцидентам"
+
+-- 4. Пробуем удалить другого сотрудника с открытыми инцидентами
+DELETE FROM Employees WHERE id = 3; -- Ошибка: "Нельзя удалить сотрудника, привязанного к открытым инцидентам"
+
+-- 5. Закрываем инцидент и пробуем снова
+UPDATE Incidents SET status = 'CLOSED' WHERE id = 103;
+DELETE FROM Employees WHERE id = 3; -- Теперь удаление пройдет успешно
