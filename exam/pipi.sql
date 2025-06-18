@@ -438,3 +438,20 @@ DELETE FROM Employees WHERE id = 3; -- Ошибка: "Нельзя удалит�
 -- 5. Закрываем инцидент и пробуем снова
 UPDATE Incidents SET status = 'CLOSED' WHERE id = 103;
 DELETE FROM Employees WHERE id = 3; -- Теперь удаление пройдет успешно
+
+--10 билет
+--3 вопрос
+SELECT 
+    type,
+    COUNT(*) AS total_incidents,
+    SUM(CASE WHEN threat_level > (SELECT AVG(threat_level) FROM incidents) THEN 1 ELSE 0 END) AS above_avg_threat,
+    ROUND(
+        SUM(CASE WHEN threat_level > (SELECT AVG(threat_level) FROM incidents) THEN 1 ELSE 0 END) * 100.0 / COUNT(*),
+        2
+    ) AS percentage_above_avg
+FROM 
+    incidents
+GROUP BY 
+    type
+ORDER BY 
+    percentage_above_avg DESC;
