@@ -120,3 +120,60 @@ SELECT incident_id, title, threat_level, fn_threat_validation(incident_id) AS is
 FROM Incidents
 WHERE incident_id = 100;
 
+--4 билет
+--3 вопрос
+
+-- Создаем таблицу для логов (если еще не создана)
+CREATE TABLE IF NOT EXISTS Incidents_Log (
+    log_id SERIAL PRIMARY KEY,
+    operation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    operation_user VARCHAR(100) NOT NULL,
+    incident_id INT NOT NULL,
+    incident_data JSONB NOT NULL,
+    operation_type VARCHAR(10) NOT NULL CHECK (operation_type IN ('INSERT', 'UPDATE', 'DELETE'))
+);
+
+-- Триггер для проверки threat_level перед вставкой
+CREATE OR REPLACE TRIGGER validate_incident_threat
+BEFORE INSERT ON Incidents
+FOR EACH ROW
+EXECUTE FUNCTION 
+BEGIN
+    -- Проверяем и корректируем threat_level
+    IF NEW.threat_level IS NULL OR NEW.threat_level < 1 OR NEW.threat_level > 5 THEN
+        NEW.threat_level := 3; -- Устанавливаем значение по умолчанию
+    END IF;
+    
+    RETURN NEW;
+END;
+
+-- Триггер для логирования после вставки
+CREATE OR REPLACE TRIGGER log_incident_insert
+AFTER INSERT ON Incidents
+FOR EACH ROW
+EXECUTE FUNCTION 
+BEGIN
+    -- Логируем операцию вставки
+    INSERT INTO Incidents_Log (
+        operation_date,
+        operation_user,
+        incident_id,
+        incident_data,
+        operation_type
+    ) VALUES (
+        CURRENT_TIMESTAMP,
+        CURRENT_USER,
+        NEW.incident_id,
+        jsonb_build_object(
+            'title', NEW.title,
+            'description', NEW.description,
+            'status', NEW.status,
+            'threat_level', NEW.threat_level,
+            'created_at', NEW.created_at,
+            'updated_at', NEW.updated_at
+        ),
+        'INSERT'
+    );
+    
+    RETURN NULL;
+END;

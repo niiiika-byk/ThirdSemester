@@ -135,3 +135,4 @@ urlpatterns = [
     path('incidents/', views.get_incidents_by_employee, name='incidents-by-employee'),
     path('incidents/<int:pk>/', views.delete_incident, name='delete-incident'),
 ]
+
