@@ -199,3 +199,30 @@ FROM (
 GROUP BY incident_type
 HAVING AVG(threat_level) > 3
 ORDER BY avg_threat_level DESC;
+
+--6 билет
+--3 вопрос
+
+CREATE OR REPLACE FUNCTION count_vulnerabilities_in_period(
+    start_date DATE,
+    end_date DATE
+)
+RETURNS INTEGER AS $$
+DECLARE
+    vulnerability_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO vulnerability_count
+    FROM vulnerabilities
+    WHERE created_at BETWEEN start_date AND end_date;
+    
+    -- Возвращаем 0 если нет результатов
+    RETURN COALESCE(vulnerability_count, 0);
+END;
+$$ LANGUAGE plpgsql;
+
+--проверка
+SELECT 
+    count_vulnerabilities_in_period(
+        '2023-01-01', 
+        '2023-12-31'
+    ) AS vulnerabilities_count;
